@@ -50,6 +50,10 @@ else
   TTY="tty0"
 fi
 
+echo "Echoing Arguments and Exiting for Testing..."
+echo "$@"
+exit
+
 get_env_var() {
   (grep "$1=" "$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]').env") | sed -e 's/\"//' | cut -d '=' -f2-
 }
