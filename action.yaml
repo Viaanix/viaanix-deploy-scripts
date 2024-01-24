@@ -37,7 +37,7 @@ inputs:
 
 runs:
   using: docker
-  image: amazon/aws-cli
+  image: Dockerfile
   env:
 #    ENVIRONMENT: ${{ github.ref == 'main' && 'PROD' || 'DEV' }}
     RUNNER_ACCOUNT_ID: ${{ inputs.runner-account-id }}
