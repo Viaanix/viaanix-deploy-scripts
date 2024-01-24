@@ -1,0 +1,52 @@
+name: Viaanix Deploy Scripts
+description: Deploy an AWS SAM Application
+author: Viaanix | Kelsi Andrews <kelsi.andrews@viaanix.com>
+inputs:
+  RunnerAccountId:
+    description: GitHub Access Token
+    required: true
+  tags:
+    description: 'TODO: ADD' # TODO: ADD
+    required: true
+#    default:
+  region:
+    description: 'TODO: ADD' # TODO: ADD
+    required: true
+    default: us-east-1
+  application-name:
+    description: 'TODO: ADD' # TODO: ADD
+    required: true
+    default: NoApplicationNameProvided
+  runner-account-id:
+    description: 'TODO: ADD' # TODO: ADD
+    required: true
+#    default:
+#    default: ${{ github.token }}
+#  working-directory:
+#    description: 'Relative path under $GITHUB_WORKSPACE where the repository was checked out.'
+#    required: false
+#  ref:
+#    description: |
+#      Git reference (e.g. branch name) from which the changes will be detected.
+#      This option is ignored if action is triggered by pull_request event.
+#    required: false
+
+#outputs:
+#  tbd:
+#    description: tbd
+
+runs:
+  using: docker
+  image: amazon/aws-cli
+  env:
+#    ENVIRONMENT: ${{ github.ref == 'main' && 'PROD' || 'DEV' }}
+    RUNNER_ACCOUNT_ID: ${{ inputs.runner-account-id }}
+#    REPO_URL: ${{ github.server_url}}/${{ github.repository }}
+#    ORG_URL: ${{ github.server_url}}
+    TAGS: ${{ inputs.tags }}
+    REGION: ${{ inputs.region }}
+    APPLICATION_NAME: ${{ inputs.application-name }}
+#  args:
+#branding:
+#  color: blue
+#  icon: filter
