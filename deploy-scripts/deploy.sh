@@ -49,30 +49,30 @@ if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
 else
   TTY="tty0"
 fi
-
-echo "Echoing Arguments and Exiting for Testing..."
-echo "$@"
-# APPLICATION_NAME
-echo "$APPLICATION_NAME"
-#       RUNNER_ACCOUNT_ID
-echo "$RUNNER_ACCOUNT_ID"
-#       ENVIRONMENT
-echo "$ENVIRONMENT"
-#       REGION
-echo "$REGION"
-#       PROFILE
-echo "$PROFILE"
-#       RUNNER_ACCESS_TOKEN
-echo "$RUNNER_ACCESS_TOKEN"
-#       ORG_URL
-echo "$ORG_URL"
-#       OIDC_URL
-echo "$OIDC_URL"
-#       OIDC_THUMBPRINT
-echo "$OIDC_THUMBPRINT"
-#       UNPARSED_TAGS
-echo "$UNPARSED_TAGS"
-exit
+#
+#echo "Echoing Arguments and Exiting for Testing..."
+#echo "$@"
+## APPLICATION_NAME
+#echo "$APPLICATION_NAME"
+##       RUNNER_ACCOUNT_ID
+#echo "$RUNNER_ACCOUNT_ID"
+##       ENVIRONMENT
+#echo "$ENVIRONMENT"
+##       REGION
+#echo "$REGION"
+##       PROFILE
+#echo "$PROFILE"
+##       RUNNER_ACCESS_TOKEN
+#echo "$RUNNER_ACCESS_TOKEN"
+##       ORG_URL
+#echo "$ORG_URL"
+##       OIDC_URL
+#echo "$OIDC_URL"
+##       OIDC_THUMBPRINT
+#echo "$OIDC_THUMBPRINT"
+##       UNPARSED_TAGS
+#echo "$UNPARSED_TAGS"
+#exit
 
 get_env_var() {
   (grep "$1=" "$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]').env") | sed -e 's/\"//' | cut -d '=' -f2-
