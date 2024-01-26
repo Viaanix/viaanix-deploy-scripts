@@ -166,20 +166,39 @@ fi
 read -r -a TAGS <<< "$(parse_tags)"
 
 update_role() {
-  ./deploy-scripts/create-deploy-role.sh --aws-account-id "$AWS_ACCOUNT_ID" \
-          --github-runner-account-id "$RUNNER_ACCOUNT_ID" \
-          --application-name "$APPLICATION_NAME" \
-          --lowercase-application-name "$LOWERCASE_APPLICATION_NAME" \
-          --environment "$ENVIRONMENT" \
-          --region "$REGION" \
-          "${PROFILE_ARG[@]}" \
-          --sam-managed-bucket "$SAM_MANAGED_BUCKET" \
-          --oidc-url "$OIDC_URL" \
-          --tags "${TAGS[*]}"
+  UPDATE_ROLE_ARGS=(
+    "--aws-account-id" "$AWS_ACCOUNT_ID"
+    "--github-runner-account-id" "$RUNNER_ACCOUNT_ID"
+    "--application-name" "$APPLICATION_NAME"
+    "--lowercase-application-name" "$LOWERCASE_APPLICATION_NAME"
+    "--environment" "$ENVIRONMENT"
+    "--region" "$REGION"
+    "${PROFILE_ARG[@]}"
+    "--sam-managed-bucket"
+    "$SAM_MANAGED_BUCKET"
+    "--oidc-url"
+    "$OIDC_URL"
+    "--tags" "${TAGS[*]}"
+  )
+  if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
+    ./deploy-scripts/create-deploy-role.sh "${UPDATE_ROLE_ARGS[@]}"
+  else
+    /deploy-scripts/create-deploy-role.sh "${UPDATE_ROLE_ARGS[@]}"
+  fi
 }
 
 update_s3_bucket() {
-  ./deploy-scripts/create-s3-bucket.sh --bucket-name "$SAM_MANAGED_BUCKET" --tags "$UNPARSED_TAGS" "${PROFILE_ARG[@]}"
+  UPDATE_S3_BUCKET_ARGS=(
+    "--bucket-name" "$SAM_MANAGED_BUCKET"
+    "--tags" "$UNPARSED_TAGS"
+    "${PROFILE_ARG[@]}"
+  )
+
+  if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
+    ./deploy-scripts/create-s3-bucket.sh "${UPDATE_S3_BUCKET_ARGS[@]}"
+  else
+    /deploy-scripts/create-s3-bucket.sh "${UPDATE_S3_BUCKET_ARGS[@]}"
+  fi
 }
 
 deploy_sam() {
