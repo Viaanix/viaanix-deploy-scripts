@@ -48,7 +48,9 @@ if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
   TTY="tty"
 else
   TTY="tty0"
+  eval "$(aws sts assume-role --role-arn "arn:aws:iam::${RUNNER_ACCOUNT_ID}:role/${APPLICATION_NAME}AssumeRole${ENVIRONMENT}" --role-session-name "${LOWERCASE_APPLICATION_NAME}-assume-session-via-oidc" | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')"
 fi
+
 #
 #echo "Echoing Arguments and Exiting for Testing..."
 #echo "$@"
