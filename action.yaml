@@ -17,6 +17,16 @@ inputs:
   runner-account-id:
     description: 'TODO: ADD' # TODO: ADD
     required: true
+
+#outputs:
+#  CreateDeployRole:
+#    description: 'TODO: ADD' # TODO: ADD
+#  CreateS3Bucket:
+#    description: 'TODO: ADD' # TODO: ADD
+#  Deploy:
+#    description: 'TODO: ADD' # TODO: ADD
+#  Docker:
+#    description: 'TODO: ADD' # TODO: ADD
 #    default:
 #    default: ${{ github.token }}
 #  working-directory:
@@ -33,6 +43,7 @@ inputs:
 #    description: tbd
 
 runs:
+#  entrypoint: ./deploy-scripts/deploy.sh
   using: docker
   image: Dockerfile
   env:
