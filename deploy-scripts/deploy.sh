@@ -69,7 +69,9 @@ if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
   CONTAINER_REGISTRY_TOKEN="$(get_env_var "CONTAINER_REGISTRY_TOKEN")"
 fi
 
-if [ -n "$PROFILE" ]; then
+PROFILE_ARG=()
+
+if [ -n "$PROFILE" ] && [ "$PROFILE" != " " ]; then
   PROFILE_ARG=("--profile" "$PROFILE")
 fi
 
