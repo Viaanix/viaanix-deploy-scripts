@@ -51,31 +51,6 @@ else
   eval "$(aws sts assume-role --role-arn "arn:aws:iam::${RUNNER_ACCOUNT_ID}:role/${APPLICATION_NAME}AssumeRole${ENVIRONMENT}" --role-session-name "${LOWERCASE_APPLICATION_NAME}-assume-session-via-oidc" | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')"
 fi
 
-#
-#echo "Echoing Arguments and Exiting for Testing..."
-#echo "$@"
-## APPLICATION_NAME
-#echo "$APPLICATION_NAME"
-##       RUNNER_ACCOUNT_ID
-#echo "$RUNNER_ACCOUNT_ID"
-##       ENVIRONMENT
-#echo "$ENVIRONMENT"
-##       REGION
-#echo "$REGION"
-##       PROFILE
-#echo "$PROFILE"
-##       RUNNER_ACCESS_TOKEN
-#echo "$RUNNER_ACCESS_TOKEN"
-##       ORG_URL
-#echo "$ORG_URL"
-##       OIDC_URL
-#echo "$OIDC_URL"
-##       OIDC_THUMBPRINT
-#echo "$OIDC_THUMBPRINT"
-##       UNPARSED_TAGS
-#echo "$UNPARSED_TAGS"
-#exit
-
 get_env_var() {
   (grep "$1=" "$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]').env") | sed -e 's/\"//' | cut -d '=' -f2-
 }
@@ -91,6 +66,7 @@ if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
   OIDC_URL="$(get_env_var "OIDC_URL")"
   OIDC_THUMBPRINT="$(get_env_var "OIDC_THUMBPRINT")"
   UNPARSED_TAGS="$(get_env_var "TAGS")"
+  CONTAINER_REGISTRY_TOKEN="$(get_env_var "CONTAINER_REGISTRY_TOKEN")"
 fi
 
 if [ -n "$PROFILE" ]; then
@@ -158,8 +134,8 @@ parse_tags() {
 }
 
 AWS_ACCOUNT_ID=$(check_aws_creds)
-LOWERCASE_APPLICATION_NAME="$(echo "$APPLICATION_NAME" | sed -e 's|\([A-Z][^A-Z]\)| \1|g' -e 's|\([a-z]\)\([A-Z]\)|\1 \2|g' | sed 's/^ *//g' | tr '[:upper:]' '[:lower:]' | tr " " "-")-$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]')"
-SAM_MANAGED_BUCKET="$(echo "$APPLICATION_NAME" | sed -e 's|\([A-Z][^A-Z]\)| \1|g' -e 's|\([a-z]\)\([A-Z]\)|\1 \2|g' | sed 's/^ *//g' | tr '[:upper:]' '[:lower:]' | tr " " "-")-sam-managed-$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]')"
+#LOWERCASE_APPLICATION_NAME="$(echo "$APPLICATION_NAME" | sed -e 's|\([A-Z][^A-Z]\)| \1|g' -e 's|\([a-z]\)\([A-Z]\)|\1 \2|g' | sed 's/^ *//g' | tr '[:upper:]' '[:lower:]' | tr " " "-")-$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]')"
+#SAM_MANAGED_BUCKET="$(echo "$APPLICATION_NAME" | sed -e 's|\([A-Z][^A-Z]\)| \1|g' -e 's|\([a-z]\)\([A-Z]\)|\1 \2|g' | sed 's/^ *//g' | tr '[:upper:]' '[:lower:]' | tr " " "-")-sam-managed-$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]')"
 
 if [ "$LOCAL_DEPLOYMENT" != 1 ]; then
   UNPARSED_TAGS=$TAGS
@@ -204,28 +180,23 @@ update_s3_bucket() {
 }
 
 deploy_sam() {
-  if where sam 2> /dev/null | grep -qi '.cmd'; then
+  DEPLOY_SAM_ARGS=(
+      "${PROFILE_ARG[@]}"
+      "--parameter-overrides" "ApplicationName=$APPLICATION_NAME Environment=$ENVIRONMENT Region=$REGION LowerCaseApplicationName=$LOWERCASE_APPLICATION_NAME OrgURL=$ORG_URL GitHubRunnerAccessToken=$RUNNER_ACCESS_TOKEN GitHubOIDCURL=$OIDC_URL GitHubOIDCThumbprint=$OIDC_THUMBPRINT $UNPARSED_TAGS RunnerImage=$RUNNER_IMAGE ContainerRegistryToken=$CONTAINER_REGISTRY_TOKEN"
+      "--stack-name" "${APPLICATION_NAME}${ENVIRONMENT}"
+      "--s3-bucket" "${SAM_MANAGED_BUCKET}"
+      "--capabilities" "CAPABILITY_NAMED_IAM"
+      "--region" "$REGION"
+      "--tags" "$UNPARSED_TAGS"
+      "--no-fail-on-empty-changeset"
+    )
+
     echo -e "\n\e[1m\e[38;5;39m* Deploying to AWS through SAM..."
-    C:/PROGRA~1/Amazon/AWSSAMCLI/bin/sam.cmd deploy \
-    "${PROFILE_ARG[@]}" \
-    --parameter-overrides "ApplicationName=$APPLICATION_NAME Environment=$ENVIRONMENT Region=$REGION LowerCaseApplicationName=$LOWERCASE_APPLICATION_NAME OrgURL=$ORG_URL GitHubRunnerAccessToken=$RUNNER_ACCESS_TOKEN GitHubOIDCURL=$OIDC_URL GitHubOIDCThumbprint=$OIDC_THUMBPRINT $UNPARSED_TAGS" \
-    --stack-name "${APPLICATION_NAME}${ENVIRONMENT}" \
-    --s3-bucket "${SAM_MANAGED_BUCKET}" \
-    --capabilities CAPABILITY_NAMED_IAM \
-    --region "$REGION" \
-    --tags "$UNPARSED_TAGS" \
-    --no-fail-on-empty-changeset
-  else
-    sam deploy \
-    "${PROFILE_ARG[@]}" \
-    --parameter-overrides "ApplicationName=$APPLICATION_NAME Environment=$ENVIRONMENT Region=$REGION LowerCaseApplicationName=$LOWERCASE_APPLICATION_NAME OrgURL=$ORG_URL GitHubRunnerAccessToken=$RUNNER_ACCESS_TOKEN GitHubOIDCURL=$OIDC_URL GitHubOIDCThumbprint=$OIDC_THUMBPRINT $UNPARSED_TAGS" \
-    --stack-name "${APPLICATION_NAME}${ENVIRONMENT}" \
-    --s3-bucket "${SAM_MANAGED_BUCKET}" \
-    --capabilities CAPABILITY_NAMED_IAM \
-    --region "$REGION" \
-    --tags "$UNPARSED_TAGS" \
-    --no-fail-on-empty-changeset
-  fi
+    if where sam 2> /dev/null | grep -qi '.cmd'; then
+      C:/PROGRA~1/Amazon/AWSSAMCLI/bin/sam.cmd deploy "${DEPLOY_SAM_ARGS[@]}"
+    else
+      sam deploy "${DEPLOY_SAM_ARGS[@]}"
+    fi
 }
 
 if [ "$UPDATE_ROLE" == 1 ]; then
