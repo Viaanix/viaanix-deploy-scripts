@@ -67,7 +67,12 @@ if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
   OIDC_THUMBPRINT="$(get_env_var "OIDC_THUMBPRINT")"
   UNPARSED_TAGS="$(get_env_var "TAGS")"
   CONTAINER_REGISTRY_TOKEN="$(get_env_var "CONTAINER_REGISTRY_TOKEN")"
+  RUNNER_IMAGE="$(get_env_var "RUNNER_IMAGE")"
 fi
+
+LOWERCASE_NAME="$(echo "$APPLICATION_NAME" | sed -e 's|\([A-Z][^A-Z]\)| \1|g' -e 's|\([a-z]\)\([A-Z]\)|\1 \2|g' | sed 's/^ *//g' | tr '[:upper:]' '[:lower:]' | tr " " "-")"
+LOWERCASE_APPLICATION_NAME="$LOWERCASE_NAME-$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]')"
+SAM_MANAGED_BUCKET="$LOWERCASE_NAME-sam-managed-$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]')"
 
 PROFILE_ARG=()
 
