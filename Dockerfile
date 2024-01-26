@@ -1,6 +1,10 @@
 # Container Image
 FROM amazon/aws-cli
 
+# Running `yum update -y && yum install -y jq unzip sudo tar`
+RUN echo "* Running \`yum update -y && yum install -y jq unzip sudo tar\`..."; \
+    yum update -y && yum install -y jq unzip sudo tar
+
 # Installing the AWS SAM CLI
 RUN echo "* Installing the AWS SAM CLI..."; \
     curl -o aws-sam-cli-linux-x86_64.zip -L https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip; \
