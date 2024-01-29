@@ -71,13 +71,19 @@ if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
   LOWERCASE_NAME="$(echo "$APPLICATION_NAME" | sed -e 's|\([A-Z][^A-Z]\)| \1|g' -e 's|\([a-z]\)\([A-Z]\)|\1 \2|g' | sed 's/^ *//g' | tr '[:upper:]' '[:lower:]' | tr " " "-")"
   LOWERCASE_APPLICATION_NAME="$LOWERCASE_NAME-$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]')"
   SAM_MANAGED_BUCKET="$LOWERCASE_NAME-sam-managed-$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]')"
+  ROLE_ARGS="$(get_env_var "ROLE_ARGS")"
 fi
-
 
 PROFILE_ARG=()
 
 if [ -n "$PROFILE" ] && [ "$PROFILE" != " " ]; then
   PROFILE_ARG=("--profile" "$PROFILE")
+fi
+
+ROLE_ARG=()
+
+if [ -n "$ROLE_ARGS" ] && [ "$ROLE_ARGS" != " " ]; then
+  ROLE_ARG=("--role-args" "\"$ROLE_ARGS\"")
 fi
 
 check_aws_creds() {
@@ -159,10 +165,9 @@ update_role() {
     "--environment" "$ENVIRONMENT"
     "--region" "$REGION"
     "${PROFILE_ARG[@]}"
-    "--sam-managed-bucket"
-    "$SAM_MANAGED_BUCKET"
-    "--oidc-url"
-    "$OIDC_URL"
+    "${ROLE_ARG[@]}"
+    "--sam-managed-bucket" "$SAM_MANAGED_BUCKET"
+    "--oidc-url" "$OIDC_URL"
     "--tags" "${TAGS[*]}"
   )
   if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
