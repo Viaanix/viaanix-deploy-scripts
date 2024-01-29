@@ -557,6 +557,7 @@ EC2_POLICY=$(echo "\
 
 POLICIES=("S3 ${S3_POLICY}" "CloudFormation ${CLOUD_FORMATION_POLICY}" "IAM ${IAM_POLICY}" "CloudWatch ${CLOUDWATCH_POLICY}")
 for ROLE_ARG in "${ROLE_ARGS[@]}"; do
+  ROLE_ARG="${ROLE_ARG//\"/}"
   case "$ROLE_ARG" in
     'ec2') POLICIES+=("EC2 ${EC2_POLICY}") ;;
     'eventbridge') POLICIES+=("EventBridge ${EVENTBRIDGE_POLICY}") ;;
@@ -566,7 +567,6 @@ for ROLE_ARG in "${ROLE_ARGS[@]}"; do
     'vpc') POLICIES+=("VPC ${VPC_POLICY}") ;;
     *) echo -e "${X} The Role Argument ${BOLD}${RED}${ROLE_ARG}${RESET} is not valid" && exit 1 ;;
   esac
-  ROLE_ARG="${ROLE_ARG//\"/}"
   POLICIES+=("$POLICY_TYPE $POLICY")
 done
 # Adding All Policies to an Array to Make Creation Simpler
