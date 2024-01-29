@@ -106,6 +106,8 @@ TRUSTED_POLICY="\
   ]\
 }"
 
+echo "TRUSTED_POLICY: $TRUSTED_POLICY"
+
 # GitHub Runner IAM Role Creation
 echo -e "${BLUE}Creating/Finding the IAM Role ${ROLE_NAME}...${RED}"
 
