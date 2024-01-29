@@ -1,7 +1,7 @@
 # Container Image
 FROM ubuntu
 
-COPY ./setupenv.sh /setupenv.sh
+COPY setup-env.sh /setup-env.sh
 
 # Code file to execute when the docker container starts up (`entrypoint.sh`)
-ENTRYPOINT ["/setupenv.sh"]
+ENTRYPOINT ["/setup-env.sh"]
