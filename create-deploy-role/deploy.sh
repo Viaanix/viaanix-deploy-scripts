@@ -171,57 +171,57 @@ update_role() {
     "--tags" "${TAGS[*]}"
   )
   if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
-    ./deploy-scripts/create-deploy-role.sh "${UPDATE_ROLE_ARGS[@]}"
+    ./create-deploy-role.sh "${UPDATE_ROLE_ARGS[@]}"
   else
-    /deploy-scripts/create-deploy-role.sh "${UPDATE_ROLE_ARGS[@]}"
+    /create-deploy-role.sh "${UPDATE_ROLE_ARGS[@]}"
   fi
 }
 
-update_s3_bucket() {
-  UPDATE_S3_BUCKET_ARGS=(
-    "--bucket-name" "$SAM_MANAGED_BUCKET"
-    "--tags" "$UNPARSED_TAGS"
-    "${PROFILE_ARG[@]}"
-  )
-
-  if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
-    ./deploy-scripts/create-s3-bucket.sh "${UPDATE_S3_BUCKET_ARGS[@]}"
-  else
-    /deploy-scripts/create-s3-bucket.sh "${UPDATE_S3_BUCKET_ARGS[@]}"
-  fi
-}
-
-deploy_sam() {
-  DEPLOY_SAM_ARGS=(
-      "${PROFILE_ARG[@]}"
-      "--parameter-overrides" "ApplicationName=$APPLICATION_NAME Environment=$ENVIRONMENT Region=$REGION LowerCaseApplicationName=$LOWERCASE_APPLICATION_NAME OrgURL=$ORG_URL GitHubRunnerAccessToken=$RUNNER_ACCESS_TOKEN GitHubOIDCURL=$OIDC_URL GitHubOIDCThumbprint=$OIDC_THUMBPRINT $UNPARSED_TAGS RunnerImage=$RUNNER_IMAGE ContainerRegistryToken=$CONTAINER_REGISTRY_TOKEN"
-      "--stack-name" "${APPLICATION_NAME}${ENVIRONMENT}"
-      "--s3-bucket" "${SAM_MANAGED_BUCKET}"
-      "--capabilities" "CAPABILITY_NAMED_IAM"
-      "--region" "$REGION"
-      "--tags" "$UNPARSED_TAGS"
-      "--no-fail-on-empty-changeset"
-    )
-
-    echo -e "\n\e[1m\e[38;5;39m* Deploying to AWS through SAM..."
-    if where sam 2> /dev/null | grep -qi '.cmd'; then
-      C:/PROGRA~1/Amazon/AWSSAMCLI/bin/sam.cmd deploy "${DEPLOY_SAM_ARGS[@]}"
-    else
-      sam deploy "${DEPLOY_SAM_ARGS[@]}"
-    fi
-}
+#update_s3_bucket() {
+#  UPDATE_S3_BUCKET_ARGS=(
+#    "--bucket-name" "$SAM_MANAGED_BUCKET"
+#    "--tags" "$UNPARSED_TAGS"
+#    "${PROFILE_ARG[@]}"
+#  )
+#
+#  if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
+#    ./deploy-scripts/create-s3-bucket.sh "${UPDATE_S3_BUCKET_ARGS[@]}"
+#  else
+#    /deploy-scripts/create-s3-bucket.sh "${UPDATE_S3_BUCKET_ARGS[@]}"
+#  fi
+#}
+#
+#deploy_sam() {
+#  DEPLOY_SAM_ARGS=(
+#      "${PROFILE_ARG[@]}"
+#      "--parameter-overrides" "ApplicationName=$APPLICATION_NAME Environment=$ENVIRONMENT Region=$REGION LowerCaseApplicationName=$LOWERCASE_APPLICATION_NAME OrgURL=$ORG_URL GitHubRunnerAccessToken=$RUNNER_ACCESS_TOKEN GitHubOIDCURL=$OIDC_URL GitHubOIDCThumbprint=$OIDC_THUMBPRINT $UNPARSED_TAGS RunnerImage=$RUNNER_IMAGE ContainerRegistryToken=$CONTAINER_REGISTRY_TOKEN"
+#      "--stack-name" "${APPLICATION_NAME}${ENVIRONMENT}"
+#      "--s3-bucket" "${SAM_MANAGED_BUCKET}"
+#      "--capabilities" "CAPABILITY_NAMED_IAM"
+#      "--region" "$REGION"
+#      "--tags" "$UNPARSED_TAGS"
+#      "--no-fail-on-empty-changeset"
+#    )
+#
+#    echo -e "\n\e[1m\e[38;5;39m* Deploying to AWS through SAM..."
+#    if where sam 2> /dev/null | grep -qi '.cmd'; then
+#      C:/PROGRA~1/Amazon/AWSSAMCLI/bin/sam.cmd deploy "${DEPLOY_SAM_ARGS[@]}"
+#    else
+#      sam deploy "${DEPLOY_SAM_ARGS[@]}"
+#    fi
+#}
 
 if [ "$UPDATE_ROLE" == 1 ]; then
   update_role
 fi
 
-if [ "$UPDATE_S3_BUCKET" == 1 ]; then
-  update_s3_bucket
-fi
-
-if [ "$FORCE_DEPLOY" == 1 ] && [ "$LOCAL_DEPLOYMENT" != 1 ]; then
-    deploy_sam
-fi
+#if [ "$UPDATE_S3_BUCKET" == 1 ]; then
+#  update_s3_bucket
+#fi
+#
+#if [ "$FORCE_DEPLOY" == 1 ] && [ "$LOCAL_DEPLOYMENT" != 1 ]; then
+#    deploy_sam
+#fi
 
 if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
   readarray -t DEPLOY_FILES <<< "$( (stat -c %n:%Y ./deploy-scripts/deploy.sh "$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]').env" ./deploy-scripts/create-* template.yaml) | sed -e 's/.\/deploy-scripts\///' | sed -e 's/.sh//')"
