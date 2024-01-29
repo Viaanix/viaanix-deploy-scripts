@@ -26,6 +26,7 @@ for ARG in "$@"; do
     '--profile') set -- "$@" '-p' ;;
     '--sam-managed-bucket') set -- "$@" '-b' ;;
     '--oidc-url') set -- "$@" '-u' ;;
+    '--role-args') set -- "$@" '-a' ;;
     *) set -- "$@" "$ARG" ;;
   esac
 done
@@ -33,7 +34,7 @@ done
 
 
 # Short Arguments
-while getopts i:g:n:e:r:t:p:l:b:u: ARG; do
+while getopts i:g:n:e:r:t:p:l:b:u:a: ARG; do
   case $ARG in
     i) AWS_ACCOUNT_ID=$OPTARG ;;
     g) RUNNER_ACCOUNT_ID=$OPTARG ;;
@@ -45,6 +46,7 @@ while getopts i:g:n:e:r:t:p:l:b:u: ARG; do
     p) PROFILE_ARG=(--profile "$OPTARG") ;;
     b) SAM_MANAGED_BUCKET=$OPTARG ;;
     u) OIDC_URL=$OPTARG ;;
+    a) read -r -a ROLE_ARGS <<< "$OPTARG" ;;
     *) usage ;;
   esac
 done
@@ -129,7 +131,7 @@ echo -e "${BLUE}Updating the IAM Role ${ROLE_NAME}...${RED}"
   echo -e "${CHECKMARK} Successfully updated the IAM Role ${BOLD}${GREEN}${ROLE_NAME}"
 ) || ( echo -e "${X} The IAM Role ${BOLD}${RED}${ROLE_NAME}${RESET} was unable to be updated" && exit 1 )
 
-# Least access needed for Cloud Formation
+# Least Access Needed for Cloud Formation - Always Needed
 CLOUD_FORMATION_POLICY=$(echo "\
 {\
   \"Version\": \"2012-10-17\",\
@@ -168,7 +170,7 @@ CLOUD_FORMATION_POLICY=$(echo "\
   ]\
 }" | jq -c '.')
 
-# LEAST ACCESS NEEDED FOR LOGS
+# Least Access Needed for CloudWatch - Always Needed
 CLOUDWATCH_POLICY=$(echo "\
 {\
   \"Version\": \"2012-10-17\",\
@@ -216,7 +218,7 @@ CLOUDWATCH_POLICY=$(echo "\
   ]\
 }" | jq -c '.')
 
-# LEAST ACCESS NEEDED FOR S3
+# Least Access Needed for S3 - Always Needed for SAM_MANAGED_BUCKET
 S3_POLICY=$(echo "\
 {\
   \"Version\": \"2012-10-17\",\
@@ -268,7 +270,7 @@ S3_POLICY=$(echo "\
   ]\
 }" | jq -c '.')
 
-# LEAST ACCESS NEEDED FOR LAMBDA
+# Least Access Needed for Lambda
 LAMBDA_POLICY=$(echo "\
 {\
   \"Version\": \"2012-10-17\",\
@@ -307,7 +309,7 @@ LAMBDA_POLICY=$(echo "\
   ]\
 }" | jq -c '.')
 
-# LEAST ACCESS NEEDED FOR IAM
+# Least Access Needed for IAM - Always Needed
 IAM_POLICY=$(echo "\
 {\
   \"Version\": \"2012-10-17\",\
@@ -368,7 +370,7 @@ IAM_POLICY=$(echo "\
   ]\
 }" | jq -c '.')
 
-# LEAST ACCESS NEEDED FOR EventBridge
+# Least Access Needed for EventBridge
 EVENTBRIDGE_POLICY=$(echo "\
 {\
   \"Version\": \"2012-10-17\",\
@@ -414,6 +416,7 @@ EVENTBRIDGE_POLICY=$(echo "\
   ]\
 }" | jq -c '.')
 
+# Least Access Needed for SQS
 SQS_POLICY=$(echo "\
 {\
   \"Version\": \"2012-10-17\",\
@@ -437,6 +440,7 @@ SQS_POLICY=$(echo "\
   ]\
 }" | jq -c '.')
 
+# Least Access Needed for SSM
 SSM_POLICY=$(echo "\
 {\
   \"Version\": \"2012-10-17\",\
@@ -465,6 +469,7 @@ SSM_POLICY=$(echo "\
   ]\
 }" | jq -c '.')
 
+# Least Access Needed for VPC
 VPC_POLICY=$(echo "\
 {\
   \"Version\": \"2012-10-17\",\
@@ -496,6 +501,7 @@ VPC_POLICY=$(echo "\
 }" | jq -c '.')
 
 # TODO: Configure correct image id, run instances
+# Least Access Needed for EC2
 EC2_POLICY=$(echo "\
 {\
   \"Version\": \"2012-10-17\",\
@@ -549,9 +555,22 @@ EC2_POLICY=$(echo "\
 }" | jq -c '.')
 
 
-
+POLICIES=("S3 ${S3_POLICY}" "CloudFormation ${CLOUD_FORMATION_POLICY}" "IAM ${IAM_POLICY}" "CloudWatch ${CLOUDWATCH_POLICY}")
+for ROLE_ARG in "${ROLE_ARGS[@]}"; do
+  case "$ROLE_ARG" in
+    'ec2') POLICIES+=("EC2 ${EC2_POLICY}") ;;
+    'eventbridge') POLICIES+=("EventBridge ${EVENTBRIDGE_POLICY}") ;;
+    'lambda') POLICIES+=("Lambda ${LAMBDA_POLICY}") ;;
+    'sqs') POLICIES+=("SQS ${SQS_POLICY}") ;;
+    'ssm') POLICIES+=("SSM ${SSM_POLICY}") ;;
+    'vpc') POLICIES+=("VPC ${VPC_POLICY}") ;;
+    *) echo -e "${X} The Role Argument ${BOLD}${RED}${ROLE_ARG}${RESET} is not valid" && exit 1 ;;
+  esac
+  ROLE_ARG="${ROLE_ARG//\"/}"
+  POLICIES+=("$POLICY_TYPE $POLICY")
+done
 # Adding All Policies to an Array to Make Creation Simpler
-POLICIES=("S3 ${S3_POLICY}" "CloudFormation ${CLOUD_FORMATION_POLICY}" "IAM ${IAM_POLICY}" "CloudWatch ${CLOUDWATCH_POLICY}" "EC2 ${EC2_POLICY}")
+#POLICIES=("EC2 ${EC2_POLICY}")
 # "EventBridge ${EVENTBRIDGE_POLICY}" "Lambda ${LAMBDA_POLICY}" "SQS ${SQS_POLICY}" "SSM ${SSM_POLICY}" "VPC ${VPC_POLICY}"
 
 # Helper Variables for Printing to the Terminal
