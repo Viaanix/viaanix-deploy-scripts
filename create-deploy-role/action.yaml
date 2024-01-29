@@ -18,6 +18,10 @@ inputs:
   runner-account-id:
     description: The AWS Account ID for the GitHub Actions Runner
     required: true
+  environment:
+    description: The Environment of the Application
+    required: true
+    default: DEV
   oidc-url:
     description: The URL Used for Verifying GitHub Authorization with AWS
     required: true
@@ -62,6 +66,7 @@ runs:
     RUNNER_ACCOUNT_ID: ${{ inputs.runner-account-id }}
     #    REPO_URL: ${{ github.server_url}}/${{ github.repository }}
     #    ORG_URL: ${{ github.server_url}}
+    ENVIRONMENT: ${{ inputs.environment }}
     TAGS: ${{ inputs.tags }}
     REGION: ${{ inputs.region }}
     APPLICATION_NAME: ${{ inputs.application-name }}
@@ -70,7 +75,7 @@ runs:
     OIDC_THUMBPRINT: ${{ inputs.oidc-thumbprint }}
 #branding:
 #  color: blue
-#  icon: filter
+#  icon: the-big-v
 
 # Setup Environment Variables
 #SetupEnv:
