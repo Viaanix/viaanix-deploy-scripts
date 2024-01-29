@@ -1,5 +1,5 @@
 # Container Image
-FROM ubuntu
+FROM ghcr.io/viaanix/self-hosted-runner:dev
 
 COPY create-deploy-role.sh /create-deploy-role.sh
 COPY deploy.sh /deploy.sh
