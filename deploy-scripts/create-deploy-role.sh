@@ -558,16 +558,17 @@ EC2_POLICY=$(echo "\
 POLICIES=("S3 ${S3_POLICY}" "CloudFormation ${CLOUD_FORMATION_POLICY}" "IAM ${IAM_POLICY}" "CloudWatch ${CLOUDWATCH_POLICY}")
 for ROLE_ARG in "${ROLE_ARGS[@]}"; do
   ROLE_ARG="${ROLE_ARG//\"/}"
-  case "$ROLE_ARG" in
-    'ec2') POLICIES+=("EC2 ${EC2_POLICY}") ;;
-    'eventbridge') POLICIES+=("EventBridge ${EVENTBRIDGE_POLICY}") ;;
-    'lambda') POLICIES+=("Lambda ${LAMBDA_POLICY}") ;;
-    'sqs') POLICIES+=("SQS ${SQS_POLICY}") ;;
-    'ssm') POLICIES+=("SSM ${SSM_POLICY}") ;;
-    'vpc') POLICIES+=("VPC ${VPC_POLICY}") ;;
-    *) echo -e "${X} The Role Argument ${BOLD}${RED}${ROLE_ARG}${RESET} is not valid" && exit 1 ;;
-  esac
-  POLICIES+=("$POLICY_TYPE $POLICY")
+  if [ -n "$ROLE_ARG" ] && [ "$ROLE_ARG" != " " ]; then
+    case "$ROLE_ARG" in
+      'ec2') POLICIES+=("EC2 ${EC2_POLICY}") ;;
+      'eventbridge') POLICIES+=("EventBridge ${EVENTBRIDGE_POLICY}") ;;
+      'lambda') POLICIES+=("Lambda ${LAMBDA_POLICY}") ;;
+      'sqs') POLICIES+=("SQS ${SQS_POLICY}") ;;
+      'ssm') POLICIES+=("SSM ${SSM_POLICY}") ;;
+      'vpc') POLICIES+=("VPC ${VPC_POLICY}") ;;
+      *) echo -e "${X} The Role Argument ${BOLD}${RED}${ROLE_ARG}${RESET} is not valid" ;;
+    esac
+  fi
 done
 # Adding All Policies to an Array to Make Creation Simpler
 #POLICIES=("EC2 ${EC2_POLICY}")
