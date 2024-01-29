@@ -94,17 +94,17 @@ TRUSTED_POLICY="\
         \"AWS\": \"arn:aws:sts::${RUNNER_ACCOUNT_ID}:assumed-role/GitHubRunnerAssumeRoleForIAM/git-hub-runner-dev-assume-session-via-oidc\"\
       },\
       \"Action\": \"sts:AssumeRole\"\
-    },\
-    {\
-      \"Sid\": \"AllowAssumeRoleSession\",\
-      \"Effect\": \"Allow\",\
-      \"Principal\": {\
-        \"AWS\": \"arn:aws:sts::${AWS_ACCOUNT_ID}:assumed-role/${APPLICATION_NAME}AssumeRole${ENVIRONMENT}/git-hub-runner-dev-assume-session-via-oidc\"\
-      },\
-      \"Action\": \"sts:AssumeRole\"\
     }\
   ]\
 }"
+#    },\
+#    {\
+#      \"Sid\": \"AllowAssumeRoleSession\",\
+#      \"Effect\": \"Allow\",\
+#      \"Principal\": {\
+#        \"AWS\": \"arn:aws:sts::${AWS_ACCOUNT_ID}:assumed-role/${APPLICATION_NAME}AssumeRole${ENVIRONMENT}/git-hub-runner-dev-assume-session-via-oidc\"\
+#      },\
+#      \"Action\": \"sts:AssumeRole\"\
 
 echo "TRUSTED_POLICY: $TRUSTED_POLICY"
 
