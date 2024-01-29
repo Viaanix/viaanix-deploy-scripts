@@ -1,0 +1,101 @@
+name: Create Deploy Role
+description: Create Deploy Role for Deploying an AWS SAM Application
+author: Viaanix | Kelsi Andrews <kelsi.andrews@viaanix.com>
+
+inputs:
+  tags:
+    description: Tags for All AWS Resources
+    required: true
+  #    default:
+  region:
+    description: The AWS Region for All AWS Resources
+    required: true
+    default: us-east-1
+  application-name:
+    description: The Name of the Application
+    required: true
+    default: NoApplicationNameProvided
+  runner-account-id:
+    description: The AWS Account ID for the GitHub Actions Runner
+    required: true
+  ec2:
+    description: Specifies if EC2 Permissions Are Needed
+    required: false
+    default: 'false'
+  eventbridge:
+    description: Specifies if EventBridge Permissions Are Needed
+    required: false
+    default: 'false'
+  lambda:
+    description: Specifies if Lambda Permissions Are Needed
+    required: false
+    default: 'false'
+  sqs:
+    description: Specifies if SQS Permissions Are Needed
+    required: false
+    default: 'false'
+  ssm:
+    description: Specifies if SSM Permissions Are Needed
+    required: false
+    default: 'false'
+  vpc:
+    description: Specifies if VPC Permissions Are Needed
+    required: false
+    default: 'false'
+
+#outputs:
+#  LOWERCASE_APPLICATION_NAME:
+#    description: The Lowercase Version of the Application Name
+#  SAM_MANAGED_BUCKET:
+#    description: The S3 Bucket for SAM Managed Resources
+
+runs:
+  using: docker
+  image: Dockerfile
+  env:
+    RUNNER_ACCOUNT_ID: ${{ inputs.runner-account-id }}
+    #    REPO_URL: ${{ github.server_url}}/${{ github.repository }}
+    #    ORG_URL: ${{ github.server_url}}
+    TAGS: ${{ inputs.tags }}
+    REGION: ${{ inputs.region }}
+    APPLICATION_NAME: ${{ inputs.application-name }}
+    ROLE_ARGS: ${{ inputs.ec2 == 'true' && 'ec2 ' || '' }}${{ inputs.eventbridge == 'true' && 'eventbridge ' || '' }}${{ inputs.lambda == 'true' && 'lambda ' || '' }}${{ inputs.sqs == 'true' && 'sqs ' || '' }}${{ inputs.ssm == 'true' && 'ssm ' || '' }}${{ inputs.vpc == 'true' && 'vpc' || '' }}
+#branding:
+#  color: blue
+#  icon: filter
+
+# Setup Environment Variables
+#SetupEnv:
+#  runs-on: self-hosted
+#  environment: ${{ github.ref == 'main' && 'PROD' || 'DEV' }}
+#  defaults:
+#    run:
+#      working-directory: ${{ github.workspace }}
+#  env:
+#    APPLICATION_NAME: ${{ vars.APPLICATION_NAME }}
+#    ENVIRONMENT: ${{ github.ref == 'main' && 'PROD' || 'DEV' }}
+#  outputs:
+#    LOWERCASE_APPLICATION_NAME: ${{ steps.SetupEnv.outputs.LOWERCASE_APPLICATION_NAME }}
+#    SAM_MANAGED_BUCKET: ${{ steps.SetupEnv.outputs.SAM_MANAGED_BUCKET }}
+#  steps:
+#    - name: Setup Env
+#      id: SetupEnv
+#      run: |
+#        LOWERCASE_NAME="$(echo "${{ env.APPLICATION_NAME }}" | sed -e 's|\([A-Z][^A-Z]\)| \1|g' -e 's|\([a-z]\)\([A-Z]\)|\1 \2|g' | sed 's/^ *//g' | tr '[:upper:]' '[:lower:]' | tr " " "-")"
+#        LOWERCASE_APPLICATION_NAME="$LOWERCASE_NAME-$(echo "${{ env.ENVIRONMENT }}" | tr '[:upper:]' '[:lower:]')"
+#        echo "LOWERCASE_APPLICATION_NAME=$LOWERCASE_APPLICATION_NAME" >> $GITHUB_OUTPUT
+#        echo "SAM_MANAGED_BUCKET=$LOWERCASE_NAME-sam-managed-$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+#ENVIRONMENT: ${{ github.ref == 'main' && 'PROD' || 'DEV' }}
+#RUNNER_ACCESS_TOKEN: ${{ secrets.RUNNER_ACCESS_TOKEN }}
+#RUNNER_ACCOUNT_ID: ${{ secrets.RUNNER_ACCOUNT_ID }}
+#OIDC_URL: ${{ vars.OIDC_URL }}
+#OIDC_THUMBPRINT: ${{ secrets.OIDC_THUMBPRINT }}
+#REPO_URL: ${{ github.server_url}}/${{ github.repository }}
+#ORG_URL: ${{ github.server_url }}
+#TAGS: ${{ vars.TAGS }}
+#REGION: ${{ vars.REGION }}
+#APPLICATION_NAME: ${{ vars.APPLICATION_NAME }}
+#CONTAINER_REGISTRY_TOKEN: ${{ secrets.CONTAINER_REGISTRY_TOKEN }}
+#LOWERCASE_APPLICATION_NAME: ${{ needs.SetupEnv.outputs.LOWERCASE_APPLICATION_NAME }}
+#SAM_MANAGED_BUCKET: ${{ needs.SetupEnv.outputs.SAM_MANAGED_BUCKET }}
