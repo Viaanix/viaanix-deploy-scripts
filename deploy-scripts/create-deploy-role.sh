@@ -519,6 +519,7 @@ EC2_POLICY=$(echo "\
         \"ec2:CreateTags\",\
         \"ec2:DeleteTags\",\
         \"ec2:DescribeImageAttribute\",\
+        \"autoscaling:SetDesiredCapacity\",\
         \"autoscaling:CreateAutoScalingGroup\",\
         \"autoscaling:DeleteAutoScalingGroup\",\
         \"autoscaling:UpdateAutoScalingGroup\",\
