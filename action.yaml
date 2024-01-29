@@ -17,6 +17,12 @@ inputs:
   runner-account-id:
     description: The AWS Account ID for the GitHub Actions Runner
     required: true
+  oidc-url:
+    description: The URL Used for Verifying GitHub Authorization with AWS
+    required: true
+  oidc-thumbprint:
+    description: The Thumbprint Used for Verifying GitHub Authorization with AWS
+    required: true
   ec2:
     description: Specifies if EC2 Permissions Are Needed
     required: false
