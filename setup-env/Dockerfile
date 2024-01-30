@@ -1,5 +1,5 @@
 # Container Image
-FROM ubuntu
+FROM ghcr.io/viaanix/self-hosted-runner:dev
 
 COPY setup-env.sh /setup-env.sh
 
