@@ -568,7 +568,7 @@ IoT_POLICY=$(echo "\
       ],\
       \"Resource\": [\
         \"arn:aws:iot:${REGION}:${AWS_ACCOUNT_ID}:rule/${APPLICATION_NAME}*IoTTopicRule${ENVIRONMENT}\",\
-        \"*\"\
+        \"arn:aws:iot:${REGION}:${AWS_ACCOUNT_ID}:rule/*IoTTopicEvent*\"\
       ]\
     },\
     {\
