@@ -17,18 +17,21 @@ for ARG in "$@"; do
   case "$ARG" in
     '--environment') set -- "$@" '-e' ;;
     '--force-deploy') set -- "$@" '-d' ;;
+    '--custom-parameter-overrides') set -- "$@" '-p' ;;
+    '--parameter-overrides') set -- "$@" '-p' ;;
     *) set -- "$@" "$ARG" ;;
   esac
 done
 
 # Short Arguments
-while getopts e:rbdal ARG; do
+while getopts e:p:rbdal ARG; do
   case $ARG in
     e) ENVIRONMENT=$OPTARG ;;
     l) LOCAL_DEPLOYMENT=1 ;;
     r) UPDATE_ROLE=1 ;;
     b) UPDATE_S3_BUCKET=1 ;;
     d) FORCE_DEPLOY=1 ;;
+    p) CUSTOM_PARAMETER_OVERRIDES="$(echo "$OPTARG" | sed sed -e 's/\"//')" ;;
     *) usage ;;
   esac
 done
@@ -72,6 +75,7 @@ if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
   LOWERCASE_APPLICATION_NAME="$LOWERCASE_NAME-$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]')"
   SAM_MANAGED_BUCKET="$LOWERCASE_NAME-sam-managed-$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]')"
   ROLE_ARGS="$(get_env_var "ROLE_ARGS")"
+  CUSTOM_PARAMETER_OVERRIDES="$(get_env_var "CUSTOM_PARAMETER_OVERRIDES" | sed -e 's/\"//')"
 fi
 
 PROFILE_ARG=()
@@ -199,7 +203,7 @@ update_s3_bucket() {
 deploy_sam() {
   DEPLOY_SAM_ARGS=(
       "${PROFILE_ARG[@]}"
-      "--parameter-overrides" "ApplicationName=$APPLICATION_NAME Environment=$ENVIRONMENT Region=$REGION LowerCaseApplicationName=$LOWERCASE_APPLICATION_NAME $UNPARSED_TAGS"
+      "--parameter-overrides" "ApplicationName=$APPLICATION_NAME Environment=$ENVIRONMENT Region=$REGION LowerCaseApplicationName=$LOWERCASE_APPLICATION_NAME $UNPARSED_TAGS $CUSTOM_PARAMETER_OVERRIDES"
       # TODO: Add parameter for custom parameter overrides
       # OrgURL=$ORG_URL GitHubRunnerAccessToken=$RUNNER_ACCESS_TOKEN GitHubOIDCURL=$OIDC_URL GitHubOIDCThumbprint=$OIDC_THUMBPRINT RunnerImage=$RUNNER_IMAGE ContainerRegistryToken=$CONTAINER_REGISTRY_TOKEN
       "--stack-name" "${APPLICATION_NAME}${ENVIRONMENT}"
