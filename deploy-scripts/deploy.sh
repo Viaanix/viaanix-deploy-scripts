@@ -211,6 +211,7 @@ deploy_sam() {
       "--capabilities" "CAPABILITY_NAMED_IAM"
       "--region" "$REGION"
       "--tags" "$UNPARSED_TAGS"
+      "--no-confirm-changeset"
       "--no-fail-on-empty-changeset"
     )
 
