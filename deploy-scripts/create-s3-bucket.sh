@@ -49,7 +49,7 @@ echo -e "${BLUE}Looking for existing S3 Bucket $BUCKET_NAME...${RED}"
           aws s3api create-bucket --bucket "$BUCKET_NAME" --region us-east-1 --acl private "${PROFILE_ARG[@]}" > /dev/null &&
           echo -e "${CHECKMARK} S3 Bucket $BUCKET_NAME ${GREEN}created${RESET}"
         ) || # Error Creating Bucket
-        echo -e "${X} Error creating the S3 Bucket $BUCKET_NAME" && exit 1
+        (echo -e "${X} Error creating the S3 Bucket $BUCKET_NAME" && exit 1)
     )
 ) || # Error Accessing the S3 Bucket
   (echo -e "${X} Error accessing the S3 Bucket $BUCKET_NAME" && exit 1)
