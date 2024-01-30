@@ -52,7 +52,7 @@ echo -e "${BLUE}Looking for existing S3 Bucket $BUCKET_NAME...${RED}"
         echo -e "${X} Error creating the S3 Bucket $BUCKET_NAME" && exit 1
     )
 ) || # Error Accessing the S3 Bucket
-  echo -e "${X} Error accessing the S3 Bucket $BUCKET_NAME" && exit 1
+  (echo -e "${X} Error accessing the S3 Bucket $BUCKET_NAME" && exit 1)
 
 # Turning Off All Public Access Settings to the S3 Bucket
 echo -e "${BLUE}Checking public access settings of the S3 Bucket $BUCKET_NAME...${RED}"
@@ -69,7 +69,7 @@ else # Error Accessing the Public Access Settings of the S3 Bucket
   (
     aws s3api put-public-access-block --bucket "$BUCKET_NAME" --public-access-block-configuration "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true" "${PROFILE_ARG[@]}" &&
     echo -e "${CHECKMARK} Created Block Public Access Settings for the S3 Bucket $BUCKET_NAME"
-  ) || echo -e "${X} Error creating Block Public Access Settings for the S3 Bucket $BUCKET_NAME"
+  ) || (echo -e "${X} Error creating Block Public Access Settings for the S3 Bucket $BUCKET_NAME" && exit 1)
 fi
 
 # Changing Object Ownership Settings of the S3 Bucket
