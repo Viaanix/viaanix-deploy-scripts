@@ -90,7 +90,7 @@ echo -e "${BLUE}Checking object ownership settings of the S3 Bucket $BUCKET_NAME
       (
         aws s3api put-bucket-ownership-controls --bucket "$BUCKET_NAME" --ownership-controls "{\"Rules\":[{\"ObjectOwnership\":\"BucketOwnerPreferred\"}]}" "${PROFILE_ARG[@]}" &&
         echo -e "${CHECKMARK} Created Bucket Ownership Settings for the S3 Bucket $BUCKET_NAME"
-      ) || echo -e "${X} Error creating Bucket Ownership Settings for the S3 Bucket $BUCKET_NAME"
+      ) || (echo -e "${X} Error creating Bucket Ownership Settings for the S3 Bucket $BUCKET_NAME" && exit 1)
     fi
 ) ||
   (
@@ -99,7 +99,7 @@ echo -e "${BLUE}Checking object ownership settings of the S3 Bucket $BUCKET_NAME
     (
       aws s3api put-bucket-ownership-controls --bucket "$BUCKET_NAME" --ownership-controls "{\"Rules\":[{\"ObjectOwnership\":\"BucketOwnerPreferred\"}]}" "${PROFILE_ARG[@]}" &&
         echo -e "${CHECKMARK} Created Bucket Ownership Settings for the S3 Bucket $BUCKET_NAME"
-    ) || echo -e "${X} Error creating Bucket Ownership Settings for the S3 Bucket $BUCKET_NAME"
+    ) || (echo -e "${X} Error creating Bucket Ownership Settings for the S3 Bucket $BUCKET_NAME" && exit 1)
   )
 
 echo -e "${BLUE}Adding tags the S3 Bucket $BUCKET_NAME...${RED}"
