@@ -5,4 +5,3 @@ LOWERCASE_APPLICATION_NAME="$LOWERCASE_NAME-$(echo "$ENVIRONMENT" | tr '[:upper:
 SAM_MANAGED_BUCKET="$LOWERCASE_NAME-sam-managed-$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]')"
 echo "LOWERCASE_APPLICATION_NAME=$LOWERCASE_APPLICATION_NAME" >> "$GITHUB_OUTPUT"
 echo "SAM_MANAGED_BUCKET=$LOWERCASE_NAME-sam-managed-$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
-echo "RUNNER_ACCOUNT_ID=$(aws sts get-caller-identity "${PROFILE_ARG[@]}" | jq ".Account" | tr -d "\"")" >> "$GITHUB_OUTPUT"
