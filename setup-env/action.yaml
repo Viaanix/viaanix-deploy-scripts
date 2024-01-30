@@ -16,8 +16,8 @@ outputs:
       description: The Lowercase Version of the Application Name
   SAM_MANAGED_BUCKET:
       description: The S3 Bucket for SAM Managed Resources
-  RUNNER_ACCOUNT_ID:
-      description: The AWS Account ID for the GitHub Actions Runner
+#  RUNNER_ACCOUNT_ID:
+#      description: The AWS Account ID for the GitHub Actions Runner
 
 runs:
   using: docker
