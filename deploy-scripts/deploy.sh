@@ -48,7 +48,6 @@ if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
   TTY="tty"
 else
   TTY="tty0"
-  eval "$(aws sts assume-role --role-arn "arn:aws:iam::${RUNNER_ACCOUNT_ID}:role/${APPLICATION_NAME}AssumeRole${ENVIRONMENT}" --role-session-name "${LOWERCASE_APPLICATION_NAME}-assume-session-via-oidc" | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')"
 fi
 
 get_env_var() {
@@ -87,14 +86,14 @@ if [ -n "$ROLE_ARGS" ] && [ "$ROLE_ARGS" != " " ]; then
 fi
 
 check_aws_creds() {
-  echo -e "\n\e[1m\e[38;5;39m* Checking status of AWS Credentials..." > /dev/"$TTY"
+  echo -e "\n\e[1;38;5;39m* Checking status of AWS Credentials..." > /dev/"$TTY"
   (
     aws sts get-caller-identity "${PROFILE_ARG[@]}" > /dev/null &&
     echo -e "\e[1;32m  Valid Security Token" > /dev/"$TTY"
   ) || (
     (
       # TODO: Add windows vs mac check
-      echo -e "${BOLD}${RED} Expired Security Token\n\e[1m\e[33m  > aws configure sso${YELLOW}" > /dev/"$TTY"
+      echo -e "${BOLD}${RED} Expired Security Token\n\e[1;33m  > aws configure sso${YELLOW}" > /dev/"$TTY"
       winpty aws configure sso "${PROFILE_ARG[@]}" > /dev/"$TTY" &&
       aws sts get-caller-identity "${PROFILE_ARG[@]}" | jq ".Account" | tr -d "\""
     ) ||
@@ -147,8 +146,6 @@ parse_tags() {
 }
 
 AWS_ACCOUNT_ID=$(check_aws_creds)
-#LOWERCASE_APPLICATION_NAME="$(echo "$APPLICATION_NAME" | sed -e 's|\([A-Z][^A-Z]\)| \1|g' -e 's|\([a-z]\)\([A-Z]\)|\1 \2|g' | sed 's/^ *//g' | tr '[:upper:]' '[:lower:]' | tr " " "-")-$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]')"
-#SAM_MANAGED_BUCKET="$(echo "$APPLICATION_NAME" | sed -e 's|\([A-Z][^A-Z]\)| \1|g' -e 's|\([a-z]\)\([A-Z]\)|\1 \2|g' | sed 's/^ *//g' | tr '[:upper:]' '[:lower:]' | tr " " "-")-sam-managed-$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]')"
 
 if [ "$LOCAL_DEPLOYMENT" != 1 ]; then
   UNPARSED_TAGS=$TAGS
@@ -203,7 +200,7 @@ deploy_sam() {
       "--no-fail-on-empty-changeset"
     )
 
-    echo -e "\n\e[1m\e[38;5;39m* Deploying to AWS through SAM..."
+    echo -e "\n\e[1;38;5;39m* Deploying to AWS through SAM..."
     if where sam 2> /dev/null | grep -qi '.cmd'; then
       C:/PROGRA~1/Amazon/AWSSAMCLI/bin/sam.cmd deploy "${DEPLOY_SAM_ARGS[@]}"
     else
@@ -211,15 +208,28 @@ deploy_sam() {
     fi
 }
 
+DEPLOY_ROLE_ASSUMED=0
+
+assume_deploy_role() {
+  if [ $DEPLOY_ROLE_ASSUMED == 0 ]; then
+  echo -e "\n\e[1;38;5;39m* Assuming Deploy Role..."
+  eval "$(aws sts assume-role --role-arn "arn:aws:iam::${AWS_ACCOUNT_ID}:role/${APPLICATION_NAME}AssumeRole${ENVIRONMENT}" --role-session-name "${LOWERCASE_APPLICATION_NAME}-assume-session-via-oidc" | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')"
+  AWS_ACCOUNT_ID=$(check_aws_creds)
+    DEPLOY_ROLE_ASSUMED=1
+  fi
+}
+
 if [ "$UPDATE_ROLE" == 1 ]; then
   update_role
 fi
 
 if [ "$UPDATE_S3_BUCKET" == 1 ]; then
+  assume_deploy_role
   update_s3_bucket
 fi
 
 if [ "$FORCE_DEPLOY" == 1 ] && [ "$LOCAL_DEPLOYMENT" != 1 ]; then
+    assume_deploy_role
     deploy_sam
 fi
 
@@ -241,6 +251,7 @@ if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
     "$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]').env")
       if [[ "$MODIFIED_TIME" -gt "$LAST_DEPLOY" ]]; then
         update_role
+        assume_deploy_role
         update_s3_bucket
         MODIFIED=1
       fi
@@ -253,6 +264,7 @@ if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
       ;;
     "create-s3-bucket")
       if [[ "$MODIFIED_TIME" -gt "$LAST_DEPLOY" ]]; then
+        assume_deploy_role
         update_s3_bucket
         MODIFIED=1
       fi
@@ -269,12 +281,14 @@ if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
   done
 
   if [ "$MODIFIED" == 1 ]; then
+    assume_deploy_role
     deploy_sam
   else
     if [ "$FORCE_DEPLOY" == 1 ]; then
+      assume_deploy_role
       deploy_sam
     else
-      echo -e "\n\e[1m\e[38;5;39mNo Modified Files\nUse --force-deploy or -d to Force a Deployment\n\nExiting..."
+      echo -e "\n\e[1;38;5;39mNo Modified Files\n\n\tUse --force-deploy or -d to Force a Deployment\n\nExiting..."
     fi
   fi
 

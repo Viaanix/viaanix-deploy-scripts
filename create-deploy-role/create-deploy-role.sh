@@ -59,7 +59,7 @@ OIDC_ARN="arn:aws:iam::${RUNNER_ACCOUNT_ID}:oidc-provider/${OIDC_ROOT}"
 AWS_ACCOUNT_ID="$RUNNER_ACCOUNT_ID"
 
 # Policy that Allows the GitHub Runner to Assume this Account
-TRUSTED_POLICY="\
+TRUSTED_POLICY=$(echo "\
 {\
   \"Version\": \"2012-10-17\",\
   \"Statement\": [\
@@ -96,7 +96,7 @@ TRUSTED_POLICY="\
       \"Action\": \"sts:AssumeRole\"\
     }\
   ]\
-}"
+}" | jq -c '.')
 
 # GitHub Runner IAM Role Creation
 echo -e "${BLUE}Creating/Finding the IAM Role ${ROLE_NAME}...${RED}"
@@ -546,7 +546,6 @@ EC2_POLICY=$(echo "\
     }\
   ]\
 }" | jq -c '.')
-
 
 POLICIES=("S3 ${S3_POLICY}" "CloudFormation ${CLOUD_FORMATION_POLICY}" "IAM ${IAM_POLICY}" "CloudWatch ${CLOUDWATCH_POLICY}")
 for ROLE_ARG in "${ROLE_ARGS[@]}"; do
