@@ -218,10 +218,10 @@ deploy_sam() {
     echo -e "\n\e[1;38;5;39m* Deploying to AWS through SAM..."
     if where sam 2> /dev/null | grep -qi '.cmd'; then
       # TODO: Add a sam build parameter..?
-      C:/PROGRA~1/Amazon/AWSSAMCLI/bin/sam.cmd build -u || exit 1
+#      C:/PROGRA~1/Amazon/AWSSAMCLI/bin/sam.cmd build -u || exit 1
       C:/PROGRA~1/Amazon/AWSSAMCLI/bin/sam.cmd deploy "${DEPLOY_SAM_ARGS[@]}" || exit 1
     else
-      sam build -u || exit 1
+#      sam build -u || exit 1
       sam deploy "${DEPLOY_SAM_ARGS[@]}" || exit 1
     fi
 }
