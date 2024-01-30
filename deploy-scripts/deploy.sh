@@ -209,9 +209,9 @@ deploy_sam() {
 
     echo -e "\n\e[1;38;5;39m* Deploying to AWS through SAM..."
     if where sam 2> /dev/null | grep -qi '.cmd'; then
-      C:/PROGRA~1/Amazon/AWSSAMCLI/bin/sam.cmd deploy "${DEPLOY_SAM_ARGS[@]}"
+      C:/PROGRA~1/Amazon/AWSSAMCLI/bin/sam.cmd deploy "${DEPLOY_SAM_ARGS[@]}" || exit 1
     else
-      sam deploy "${DEPLOY_SAM_ARGS[@]}"
+      sam deploy "${DEPLOY_SAM_ARGS[@]}" || exit 1
     fi
 }
 
