@@ -186,6 +186,7 @@ update_s3_bucket() {
     "--bucket-name" "$SAM_MANAGED_BUCKET"
     "--tags" "$UNPARSED_TAGS"
     "${PROFILE_ARG[@]}"
+    "--region" "$REGION"
   )
 
   if [ "$LOCAL_DEPLOYMENT" == 1 ]; then

@@ -21,17 +21,19 @@ for ARG in "$@"; do
     '--bucket-name') set -- "$@" '-b' ;;
     '--tags') set -- "$@" '-t' ;;
     '--profile') set -- "$@" '-p' ;;
+    '--region') set -- "$@" '-r' ;;
     *) set -- "$@" "$ARG" ;;
   esac
 done
 
 # Short Arguments
-while getopts b:t:p: ARG; do
+while getopts b:t:p:r: ARG; do
   case $ARG in
     b) BUCKET_NAME=$OPTARG ;;
     t) read -r -a TAGS <<< "$OPTARG" ;;
     p) PROFILE_ARG=("--profile" "$OPTARG") ;;
 #    p) PROFILE=$OPTARG ;;
+    r) REGION=$OPTARG ;;
     *) usage ;;
   esac
 done
@@ -46,7 +48,7 @@ echo -e "${BLUE}Looking for existing S3 Bucket $BUCKET_NAME...${RED}"
     (
       echo -e "${X} S3 Bucket $BUCKET_NAME not found. Creating an S3 Bucket $BUCKET_NAME...${RED}" &&
         (
-          aws s3api create-bucket --bucket "$BUCKET_NAME" --region us-east-1 --acl private "${PROFILE_ARG[@]}" > /dev/null &&
+          aws s3api create-bucket --bucket "$BUCKET_NAME" --region "$REGION" --acl private "${PROFILE_ARG[@]}" > /dev/null &&
           echo -e "${CHECKMARK} S3 Bucket $BUCKET_NAME ${GREEN}created${RESET}"
         ) || # Error Creating Bucket
         (echo -e "${X} Error creating the S3 Bucket $BUCKET_NAME" && exit 1)
