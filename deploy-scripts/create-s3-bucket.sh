@@ -30,7 +30,7 @@ while getopts b:t:p: ARG; do
   case $ARG in
     b) BUCKET_NAME=$OPTARG ;;
     t) read -r -a TAGS <<< "$OPTARG" ;;
-    p) PROFILE_ARG=(--profile "$OPTARG") ;;
+    p) PROFILE_ARG=("--profile" "$OPTARG") ;;
 #    p) PROFILE=$OPTARG ;;
     *) usage ;;
   esac
@@ -39,17 +39,20 @@ done
 # Creating S3 Bucket if it Doesn't Exist
 echo -e "${BLUE}Looking for existing S3 Bucket $BUCKET_NAME...${RED}"
 (
-  aws s3api head-bucket --bucket "$BUCKET_NAME" "${PROFILE_ARG[@]}" > /dev/null &&
-  echo -e "${CHECKMARK} S3 Bucket $BUCKET_NAME ${GREEN}found${RESET}"
-) || # Bucket Does Not Exist -> Create Bucket
   (
-    echo -e "${X} S3 Bucket $BUCKET_NAME not found. Creating an S3 Bucket $BUCKET_NAME...${RED}" &&
-      (
-        aws s3api create-bucket --bucket "$BUCKET_NAME" --region us-east-1 --acl private --profile "${PROFILE_ARG[@]}" > /dev/null &&
-        echo -e "${CHECKMARK} S3 Bucket $BUCKET_NAME ${GREEN}created${RESET}"
-      ) || # Error Creating Bucket
-      echo -e "${X} Error creating the S3 Bucket $BUCKET_NAME"
-  )
+    aws s3api head-bucket --bucket "$BUCKET_NAME" "${PROFILE_ARG[@]}" > /dev/null &&
+    echo -e "${CHECKMARK} S3 Bucket $BUCKET_NAME ${GREEN}found${RESET}"
+  ) || # Bucket Does Not Exist -> Create Bucket
+    (
+      echo -e "${X} S3 Bucket $BUCKET_NAME not found. Creating an S3 Bucket $BUCKET_NAME...${RED}" &&
+        (
+          aws s3api create-bucket --bucket "$BUCKET_NAME" --region us-east-1 --acl private "${PROFILE_ARG[@]}" > /dev/null &&
+          echo -e "${CHECKMARK} S3 Bucket $BUCKET_NAME ${GREEN}created${RESET}"
+        ) || # Error Creating Bucket
+        echo -e "${X} Error creating the S3 Bucket $BUCKET_NAME" && exit 1
+    )
+) || # Error Accessing the S3 Bucket
+  echo -e "${X} Error accessing the S3 Bucket $BUCKET_NAME" && exit 1
 
 # Turning Off All Public Access Settings to the S3 Bucket
 echo -e "${BLUE}Checking public access settings of the S3 Bucket $BUCKET_NAME...${RED}"

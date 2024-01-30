@@ -43,7 +43,7 @@ while getopts i:g:n:e:r:t:p:l:b:u:a: ARG; do
     e) ENVIRONMENT=$OPTARG ;;
     r) REGION=$OPTARG ;;
     t) read -r -a TAGS <<< "$OPTARG" ;;
-    p) PROFILE_ARG=(--profile "$OPTARG") ;;
+    p) PROFILE_ARG=("--profile" "$OPTARG") ;;
     b) SAM_MANAGED_BUCKET=$OPTARG ;;
     u) OIDC_URL=$OPTARG ;;
     a) read -r -a ROLE_ARGS <<< "$OPTARG" ;;
@@ -114,7 +114,7 @@ echo -e "${BLUE}Creating/Finding the IAM Role ${ROLE_NAME}...${RED}"
         --tags "${TAGS[0]}" \
         > /dev/null
   ) && echo -e "${CHECKMARK} Created the IAM Role ${BOLD}${GREEN}${ROLE_NAME}"
-)
+) || echo -e "${X} The IAM Role ${BOLD}${RED}${ROLE_NAME}${RESET} was unable to be created" && exit 1
 
 # Updates the GitHub Runner IAM Role to keep all Policies up to date
 echo -e "${BLUE}Updating the IAM Role ${ROLE_NAME}...${RED}"
