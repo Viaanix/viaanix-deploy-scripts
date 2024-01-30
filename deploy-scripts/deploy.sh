@@ -89,7 +89,8 @@ fi
 check_aws_creds() {
   echo -e "\n\e[1;38;5;39m* Checking status of AWS Credentials..." > /dev/"$TTY"
   (
-    aws sts get-caller-identity "${PROFILE_ARG[@]}" > /dev/null &&
+#    aws sts get-caller-identity "${PROFILE_ARG[@]}" > /dev/null &&
+    aws sts get-caller-identity "${PROFILE_ARG[@]}" | jq ".Account" | tr -d "\"" &&
     echo -e "\e[1;32m  Valid Security Token" > /dev/"$TTY"
   ) || (
     (
@@ -98,7 +99,8 @@ check_aws_creds() {
       winpty aws configure sso "${PROFILE_ARG[@]}" > /dev/"$TTY" &&
       aws sts get-caller-identity "${PROFILE_ARG[@]}" | jq ".Account" | tr -d "\""
     ) ||
-    echo -e "${BOLD}${RED}  Error running 'aws configure sso'\n\n\e[1;38;5;177mAttempting to run the tests without AWS Access...\e[1;38;5;39m" > /dev/stderr
+    echo -e "${BOLD}${RED}  Error running 'aws configure sso'\e[1;38;5;39m" > /dev/stderr && exit 1
+    # \n\n\e[1;38;5;177mAttempting to run the tests without AWS Access...
   )
 }
 
@@ -157,6 +159,9 @@ if [ "$LOCAL_DEPLOYMENT" != 1 ]; then
 fi
 
 read -r -a TAGS <<< "$(parse_tags)"
+
+echo "AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID"
+echo "RUNNER_ACCOUNT_ID=$RUNNER_ACCOUNT_ID"
 
 update_role() {
   UPDATE_ROLE_ARGS=(

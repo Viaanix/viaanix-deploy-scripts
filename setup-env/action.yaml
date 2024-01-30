@@ -10,7 +10,7 @@ inputs:
     description: The Environment of the Application
     required: true
     default: DEV
-
+`
 outputs:
   LOWERCASE_APPLICATION_NAME:
       description: The Lowercase Version of the Application Name
