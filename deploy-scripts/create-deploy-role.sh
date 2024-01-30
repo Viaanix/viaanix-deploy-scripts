@@ -114,7 +114,7 @@ echo -e "${BLUE}Creating/Finding the IAM Role ${ROLE_NAME}...${RED}"
         --tags "${TAGS[0]}" \
         > /dev/null
   ) && echo -e "${CHECKMARK} Created the IAM Role ${BOLD}${GREEN}${ROLE_NAME}"
-) || echo -e "${X} The IAM Role ${BOLD}${RED}${ROLE_NAME}${RESET} was unable to be created" && exit 1
+) || (echo -e "${X} The IAM Role ${BOLD}${RED}${ROLE_NAME}${RESET} was unable to be created" && exit 1)
 
 # Updates the GitHub Runner IAM Role to keep all Policies up to date
 echo -e "${BLUE}Updating the IAM Role ${ROLE_NAME}...${RED}"
