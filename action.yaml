@@ -14,8 +14,8 @@ inputs:
     description: The Name of the Application
     required: true
     default: NoApplicationNameProvided
-  runner-account-id:
-    description: The AWS Account ID for the GitHub Actions Runner
+  aws-account-id:
+    description: The AWS Account ID for the Account that the GitHub Actions Runner Will Assume
     required: true
   environment:
     description: The Environment of the Application
@@ -81,7 +81,7 @@ runs:
   using: docker
   image: Dockerfile
   env:
-    RUNNER_ACCOUNT_ID: ${{ inputs.runner-account-id }}
+    AWS_ACCOUNT_ID: ${{ inputs.aws-account-id }}
     #    REPO_URL: ${{ github.server_url}}/${{ github.repository }}
     #    ORG_URL: ${{ github.server_url}}
     ENVIRONMENT: ${{ inputs.environment }}

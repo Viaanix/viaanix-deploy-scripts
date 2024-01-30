@@ -57,6 +57,7 @@ get_env_var() {
 if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
   APPLICATION_NAME="$(get_env_var "APPLICATION_NAME")"
   RUNNER_ACCOUNT_ID="$(get_env_var "RUNNER_ACCOUNT_ID")"
+  AWS_ACCOUNT_ID="$(get_env_var "AWS_ACCOUNT_ID")"
   ENVIRONMENT="$(echo "$ENVIRONMENT" | tr '[:lower:]' '[:upper:]')"
   REGION="$(get_env_var "REGION")"
   PROFILE="$(get_env_var "PROFILE")"
@@ -145,7 +146,11 @@ parse_tags() {
   echo "[$TAGS]" "[$NEW_TAGSET]"
 }
 
-AWS_ACCOUNT_ID=$(check_aws_creds)
+RUNNER_ACCOUNT_ID=$(check_aws_creds)
+
+if [ -z "$AWS_ACCOUNT_ID" ] || [ "$AWS_ACCOUNT_ID" == " " ]; then
+  AWS_ACCOUNT_ID="$RUNNER_ACCOUNT_ID"
+fi
 
 if [ "$LOCAL_DEPLOYMENT" != 1 ]; then
   UNPARSED_TAGS=$TAGS
@@ -214,7 +219,6 @@ assume_deploy_role() {
   if [ $DEPLOY_ROLE_ASSUMED == 0 ]; then
   echo -e "\n\e[1;38;5;39m* Assuming Deploy Role..."
   eval "$(aws sts assume-role --role-arn "arn:aws:iam::${AWS_ACCOUNT_ID}:role/${APPLICATION_NAME}AssumeRole${ENVIRONMENT}" --role-session-name "${LOWERCASE_APPLICATION_NAME}-assume-session-via-oidc" | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')"
-  AWS_ACCOUNT_ID=$(check_aws_creds)
     DEPLOY_ROLE_ASSUMED=1
   fi
 }
