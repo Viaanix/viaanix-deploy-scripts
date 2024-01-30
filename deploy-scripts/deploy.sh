@@ -99,7 +99,7 @@ check_aws_creds() {
       winpty aws configure sso "${PROFILE_ARG[@]}" > /dev/"$TTY" &&
       aws sts get-caller-identity "${PROFILE_ARG[@]}" | jq ".Account" | tr -d "\""
     ) ||
-    echo -e "${BOLD}${RED}  Error running 'aws configure sso'\e[1;38;5;39m" > /dev/stderr && exit 1
+    (echo -e "${BOLD}${RED}  Error running 'aws configure sso'\e[1;38;5;39m" > /dev/stderr && exit 1)
     # \n\n\e[1;38;5;177mAttempting to run the tests without AWS Access...
   )
 }
@@ -220,7 +220,7 @@ DEPLOY_ROLE_ASSUMED=0
 assume_deploy_role() {
   if [ $DEPLOY_ROLE_ASSUMED == 0 ]; then
   echo -e "\n\e[1;38;5;39m* Assuming Deploy Role..."
-  eval "$(aws sts assume-role --role-arn "arn:aws:iam::${AWS_ACCOUNT_ID}:role/${APPLICATION_NAME}AssumeRole${ENVIRONMENT}" --role-session-name "${LOWERCASE_APPLICATION_NAME}-assume-session-via-oidc" | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')"
+  eval "$( (aws sts assume-role --role-arn "arn:aws:iam::${AWS_ACCOUNT_ID}:role/${APPLICATION_NAME}AssumeRole${ENVIRONMENT}" --role-session-name "${LOWERCASE_APPLICATION_NAME}-assume-session-via-oidc" || exit 1) | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')"
     DEPLOY_ROLE_ASSUMED=1
   fi
 }
