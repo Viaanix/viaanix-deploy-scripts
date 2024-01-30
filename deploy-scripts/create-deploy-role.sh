@@ -567,7 +567,8 @@ IoT_POLICY=$(echo "\
         \"iot:ListTagsForResource\"\
       ],\
       \"Resource\": [\
-        \"arn:aws:iot:${REGION}:${AWS_ACCOUNT_ID}:rule/${APPLICATION_NAME}*${ENVIRONMENT}\"\
+        \"arn:aws:iot:${REGION}:${AWS_ACCOUNT_ID}:rule/${APPLICATION_NAME}*IoTTopicRule${ENVIRONMENT}\",\
+        \"*\"\
       ]\
     },\
     {\
