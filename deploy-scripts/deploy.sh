@@ -199,7 +199,9 @@ update_s3_bucket() {
 deploy_sam() {
   DEPLOY_SAM_ARGS=(
       "${PROFILE_ARG[@]}"
-      "--parameter-overrides" "ApplicationName=$APPLICATION_NAME Environment=$ENVIRONMENT Region=$REGION LowerCaseApplicationName=$LOWERCASE_APPLICATION_NAME OrgURL=$ORG_URL GitHubRunnerAccessToken=$RUNNER_ACCESS_TOKEN GitHubOIDCURL=$OIDC_URL GitHubOIDCThumbprint=$OIDC_THUMBPRINT $UNPARSED_TAGS RunnerImage=$RUNNER_IMAGE ContainerRegistryToken=$CONTAINER_REGISTRY_TOKEN"
+      "--parameter-overrides" "ApplicationName=$APPLICATION_NAME Environment=$ENVIRONMENT Region=$REGION LowerCaseApplicationName=$LOWERCASE_APPLICATION_NAME"
+      # TODO: Add parameter for custom parameter overrides
+      # OrgURL=$ORG_URL GitHubRunnerAccessToken=$RUNNER_ACCESS_TOKEN GitHubOIDCURL=$OIDC_URL GitHubOIDCThumbprint=$OIDC_THUMBPRINT $UNPARSED_TAGS RunnerImage=$RUNNER_IMAGE ContainerRegistryToken=$CONTAINER_REGISTRY_TOKEN
       "--stack-name" "${APPLICATION_NAME}${ENVIRONMENT}"
       "--s3-bucket" "${SAM_MANAGED_BUCKET}"
       "--capabilities" "CAPABILITY_NAMED_IAM"
