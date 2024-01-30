@@ -91,7 +91,7 @@ TRUSTED_POLICY=$(echo "\
       \"Sid\": \"AllowAssumeRoleSession\",\
       \"Effect\": \"Allow\",\
       \"Principal\": {\
-        \"AWS\": \"arn:aws:sts::${AWS_ACCOUNT_ID}:assumed-role/${APPLICATION_NAME}AssumeRole${ENVIRONMENT}/git-hub-runner-dev-assume-session-via-oidc\"\
+        \"AWS\": \"arn:aws:sts::${AWS_ACCOUNT_ID}:assumed-role/${APPLICATION_NAME}AssumeRole${ENVIRONMENT}/${LOWERCASE_APPLICATION_NAME}-assume-session-via-oidc\"\
       },\
       \"Action\": \"sts:AssumeRole\"\
     }\
