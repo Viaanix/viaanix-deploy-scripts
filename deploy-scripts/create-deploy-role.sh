@@ -547,6 +547,43 @@ EC2_POLICY=$(echo "\
   ]\
 }" | jq -c '.')
 
+# Least Access Needed for IoT
+IoT_POLICY=$(echo "\
+{\
+  \"Version\": \"2012-10-17\",\
+  \"Statement\": [\
+    {\
+      \"Sid\": \"AllowBasicIoT\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"iot:CreateTopicRule\",\
+        \"iot:DeleteTopicRule\",\
+        \"iot:GetTopicRule\",\
+        \"iot:ReplaceTopicRule\",\
+        \"iot:EnableTopicRule\",\
+        \"iot:DisableTopicRule\",\
+        \"iot:TagResource\",\
+        \"iot:UntagResource\",\
+        \"iot:ListTagsForResource\"\
+      ],\
+      \"Resource\": [\
+        \"arn:aws:iot:${REGION}:${AWS_ACCOUNT_ID}:rule/${APPLICATION_NAME}*${ENVIRONMENT}\"\
+      ]\
+    },\
+    {\
+      \"Sid\": \"AllowBasicIoTResources\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"iot:ListTopicRules\"\
+      ],\
+      \"Resource\": [\
+        \"*\"\
+      ]\
+    }\
+  ]\
+}" | jq -c '.')
+#        \"arn:aws:iot:${REGION}:${AWS_ACCOUNT_ID}:destination/${DestinationType}/*\"\
+
 POLICIES=("S3 ${S3_POLICY}" "CloudFormation ${CLOUD_FORMATION_POLICY}" "IAM ${IAM_POLICY}" "CloudWatch ${CLOUDWATCH_POLICY}")
 for ROLE_ARG in "${ROLE_ARGS[@]}"; do
   ROLE_ARG="${ROLE_ARG//\"/}"
@@ -558,6 +595,7 @@ for ROLE_ARG in "${ROLE_ARGS[@]}"; do
       'sqs') POLICIES+=("SQS ${SQS_POLICY}") ;;
       'ssm') POLICIES+=("SSM ${SSM_POLICY}") ;;
       'vpc') POLICIES+=("VPC ${VPC_POLICY}") ;;
+      'iot') POLICIES+=("IoT ${IoT_POLICY}") ;;
       *) echo -e "${X} The Role Argument ${BOLD}${RED}${ROLE_ARG}${RESET} is not valid" ;;
     esac
   fi
