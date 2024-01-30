@@ -160,9 +160,6 @@ fi
 
 read -r -a TAGS <<< "$(parse_tags)"
 
-echo "AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID"
-echo "RUNNER_ACCOUNT_ID=$RUNNER_ACCOUNT_ID"
-
 update_role() {
   UPDATE_ROLE_ARGS=(
     "--aws-account-id" "$AWS_ACCOUNT_ID"
