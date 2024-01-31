@@ -3,9 +3,9 @@ FROM amazon/aws-cli
 
 # Running `yum update -y && yum install -y jq unzip sudo tar`
 RUN echo "* Running \`yum update -y && yum install -y jq unzip sudo tar nodejs npm\`..."; \
-    yum update -y && yum install -y jq unzip sudo tar; \
-    yum -y install epel-release; \
-    yum -y install nodejs npm;
+    yum update -y && yum install -y jq unzip sudo tar nodejs16; \
+#    yum -y install epel-release; \
+#    yum -y install nodejs npm;
 
 # Installing the AWS SAM CLI
 RUN echo "* Installing the AWS SAM CLI..."; \
