@@ -73,10 +73,11 @@ if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
   RUNNER_IMAGE="$(get_env_var "RUNNER_IMAGE")"
   LOWERCASE_NAME="$(echo "$APPLICATION_NAME" | sed -e 's|\([A-Z][^A-Z]\)| \1|g' -e 's|\([a-z]\)\([A-Z]\)|\1 \2|g' | sed 's/^ *//g' | tr '[:upper:]' '[:lower:]' | tr " " "-")"
   LOWERCASE_APPLICATION_NAME="$LOWERCASE_NAME-$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]')"
-  SAM_MANAGED_BUCKET="$LOWERCASE_NAME-sam-managed-$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]')"
   ROLE_ARGS="$(get_env_var "ROLE_ARGS")"
   CUSTOM_PARAMETER_OVERRIDES="$(get_env_var "CUSTOM_PARAMETER_OVERRIDES" | sed -e 's/\"//')"
 fi
+
+SAM_MANAGED_BUCKET="$LOWERCASE_NAME-sam-managed-$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]')"
 
 PROFILE_ARG=()
 
