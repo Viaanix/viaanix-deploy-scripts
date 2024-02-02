@@ -1,0 +1,25 @@
+name: Setup Environment
+description: Setup Environment for Deploying an AWS SAM Application
+author: Viaanix | Kelsi Andrews <kelsi.andrews@viaanix.com>
+inputs:
+  application-name:
+    description: The Name of the Application
+    required: true
+    default: NoApplicationNameProvided
+  environment:
+    description: The Environment of the Application
+    required: true
+    default: DEV
+
+outputs:
+  LOWERCASE_APPLICATION_NAME:
+      description: The Lowercase Version of the Application Name
+  SAM_MANAGED_BUCKET:
+      description: The S3 Bucket for SAM Managed Resources
+
+runs:
+  using: docker
+  image: Dockerfile
+  env:
+    APPLICATION_NAME: ${{ inputs.application-name }}
+    ENVIRONMENT: ${{ inputs.environment }}

@@ -1,0 +1,70 @@
+name: Viaanix Deploy Scripts
+description: Deploy an AWS SAM Application
+author: Viaanix | Kelsi Andrews <kelsi.andrews@viaanix.com>
+inputs:
+  tags:
+    description: Tags for All AWS Resources
+    required: true
+  region:
+    description: The AWS Region for All AWS Resources
+    required: true
+    default: us-east-1
+  application-name:
+    description: The Name of the Application
+    required: true
+    default: NoApplicationNameProvided
+  aws-account-id:
+    description: The AWS Account ID for the Account that the GitHub Actions Runner Will Assume
+    required: true
+  environment:
+    description: The Environment of the Application
+    required: true
+    default: DEV
+  oidc-url:
+    description: The URL Used for Verifying GitHub Authorization with AWS
+    required: true
+  custom-parameter-overrides:
+    description: Custom Parameter Overrides for the SAM Application
+    required: false
+  ec2:
+    description: Specifies if EC2 Permissions Are Needed
+    required: false
+    default: 'false'
+  eventbridge:
+    description: Specifies if EventBridge Permissions Are Needed
+    required: false
+    default: 'false'
+  lambda:
+    description: Specifies if Lambda Permissions Are Needed
+    required: false
+    default: 'false'
+  sqs:
+    description: Specifies if SQS Permissions Are Needed
+    required: false
+    default: 'false'
+  ssm:
+    description: Specifies if SSM Permissions Are Needed
+    required: false
+    default: 'false'
+  vpc:
+    description: Specifies if VPC Permissions Are Needed
+    required: false
+    default: 'false'
+  iot:
+    description: Specifies if IoT Permissions Are Needed
+    required: false
+    default: 'false'
+
+runs:
+  using: docker
+  image: Dockerfile
+  env:
+    # TODO: Might not need to explicitly pass these due to how environment variables work on GitHub Actions
+    AWS_ACCOUNT_ID: ${{ inputs.aws-account-id }}
+    ENVIRONMENT: ${{ inputs.environment }}
+    TAGS: ${{ inputs.tags }}
+    REGION: ${{ inputs.region }}
+    APPLICATION_NAME: ${{ inputs.application-name }}
+    ROLE_ARGS: ${{ inputs.ec2 == 'true' && 'ec2 ' || '' }}${{ inputs.eventbridge == 'true' && 'eventbridge ' || '' }}${{ inputs.lambda == 'true' && 'lambda ' || '' }}${{ inputs.sqs == 'true' && 'sqs ' || '' }}${{ inputs.ssm == 'true' && 'ssm ' || '' }}${{ inputs.vpc == 'true' && 'vpc ' || '' }} ${{ inputs.iot == 'true' && 'iot' || '' }}
+    OIDC_URL: ${{ inputs.oidc-url }}
+    CUSTOM_PARAMETER_OVERRIDES: ${{ inputs.custom-parameter-overrides }}
