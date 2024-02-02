@@ -5,5 +5,5 @@ COPY setup-env.sh /setup-env.sh
 
 RUN chmod +x /setup-env.sh
 
-# Code file to execute when the docker container starts up (`entrypoint.sh`)
+# Code File to Execute When the Docker Container Starts Up
 ENTRYPOINT ["/setup-env.sh"]

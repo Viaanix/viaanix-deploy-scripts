@@ -44,7 +44,6 @@ if [ "$1" == "all" ]; then
   UPDATE_ROLE=1
   UPDATE_S3_BUCKET=1
   FORCE_DEPLOY=1
-#  DEPLOY=1
 fi
 
 if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
@@ -78,7 +77,6 @@ if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
   CUSTOM_PARAMETER_OVERRIDES="$(get_env_var "CUSTOM_PARAMETER_OVERRIDES" | sed -e 's/\"//')"
 fi
 
-
 PROFILE_ARG=()
 
 if [ -n "$PROFILE" ] && [ "$PROFILE" != " " ]; then
@@ -94,7 +92,6 @@ fi
 check_aws_creds() {
   echo -e "\n\e[1;38;5;39m* Checking status of AWS Credentials..." > /dev/"$TTY"
   (
-#    aws sts get-caller-identity "${PROFILE_ARG[@]}" > /dev/null &&
     aws sts get-caller-identity "${PROFILE_ARG[@]}" | jq ".Account" | tr -d "\"" &&
     echo -e "\e[1;32m  Valid Security Token" > /dev/"$TTY"
   ) || (
@@ -103,9 +100,7 @@ check_aws_creds() {
       echo -e "${BOLD}${RED} Expired Security Token\n\e[1;33m  > aws configure sso${YELLOW}" > /dev/"$TTY"
       winpty aws configure sso "${PROFILE_ARG[@]}" > /dev/"$TTY" &&
       aws sts get-caller-identity "${PROFILE_ARG[@]}" | jq ".Account" | tr -d "\""
-    ) ||
-    (echo -e "${BOLD}${RED}  Error running 'aws configure sso'\e[1;38;5;39m" > /dev/stderr && exit 1)
-    # \n\n\e[1;38;5;177mAttempting to run the tests without AWS Access...
+    ) || (echo -e "${BOLD}${RED}  Error running 'aws configure sso'\e[1;38;5;39m" > /dev/stderr && exit 1)
   )
 }
 
@@ -205,8 +200,6 @@ deploy_sam() {
   DEPLOY_SAM_ARGS=(
       "${PROFILE_ARG[@]}"
       "--parameter-overrides" "ApplicationName=$APPLICATION_NAME Environment=$ENVIRONMENT Region=$REGION LowerCaseApplicationName=$LOWERCASE_APPLICATION_NAME $UNPARSED_TAGS $CUSTOM_PARAMETER_OVERRIDES"
-      # TODO: Add parameter for custom parameter overrides
-      # OrgURL=$ORG_URL GitHubRunnerAccessToken=$RUNNER_ACCESS_TOKEN GitHubOIDCURL=$OIDC_URL GitHubOIDCThumbprint=$OIDC_THUMBPRINT RunnerImage=$RUNNER_IMAGE ContainerRegistryToken=$CONTAINER_REGISTRY_TOKEN
       "--stack-name" "${APPLICATION_NAME}${ENVIRONMENT}"
       "--s3-bucket" "${SAM_MANAGED_BUCKET}"
       "--capabilities" "CAPABILITY_NAMED_IAM"
@@ -291,7 +284,6 @@ if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
       fi
       ;;
     *) ;;
-  #    echo "Unexpected File - skipping" ;;
     esac
 
   done

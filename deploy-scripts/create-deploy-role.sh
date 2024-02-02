@@ -585,7 +585,10 @@ IoT_POLICY=$(echo "\
 }" | jq -c '.')
 #        \"arn:aws:iot:${REGION}:${AWS_ACCOUNT_ID}:destination/${DestinationType}/*\"\
 
+# Adding All Policies to an Array to Make Creation Simpler
 POLICIES=("S3 ${S3_POLICY}" "CloudFormation ${CLOUD_FORMATION_POLICY}" "IAM ${IAM_POLICY}" "CloudWatch ${CLOUDWATCH_POLICY}")
+
+# Adding Custom Policies to the Array
 for ROLE_ARG in "${ROLE_ARGS[@]}"; do
   ROLE_ARG="${ROLE_ARG//\"/}"
   if [ -n "$ROLE_ARG" ] && [ "$ROLE_ARG" != " " ]; then
@@ -601,9 +604,6 @@ for ROLE_ARG in "${ROLE_ARGS[@]}"; do
     esac
   fi
 done
-# Adding All Policies to an Array to Make Creation Simpler
-#POLICIES=("EC2 ${EC2_POLICY}")
-# "EventBridge ${EVENTBRIDGE_POLICY}" "Lambda ${LAMBDA_POLICY}" "SQS ${SQS_POLICY}" "SSM ${SSM_POLICY}" "VPC ${VPC_POLICY}"
 
 # Helper Variables for Printing to the Terminal
 SHOULD_FAIL=0
