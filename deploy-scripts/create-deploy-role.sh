@@ -522,7 +522,7 @@ EC2_POLICY=$(echo "\
       \"Resource\": [\
         \"arn:aws:ec2:${REGION}:${AWS_ACCOUNT_ID}:launch-template/*\",\
         \"arn:aws:ec2:${REGION}:${AWS_ACCOUNT_ID}:instance/*\",\
-        \"arn:aws:autoscaling:${REGION}:${AWS_ACCOUNT_ID}:autoScalingGroup:*:autoScalingGroupName/${APPLICATION_NAME}AutoScalingGroup*DEV\"\
+        \"arn:aws:autoscaling:${REGION}:${AWS_ACCOUNT_ID}:autoScalingGroup:*:autoScalingGroupName/${APPLICATION_NAME}AutoScalingGroup*${ENVIRONMENT}\"\
       ]\
     },\
     {\

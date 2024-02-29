@@ -36,9 +36,11 @@ while getopts e:p:rbdal ARG; do
   esac
 done
 
+echo "ENVIRONMENT 1: $ENVIRONMENT"
 if [ -z "$ENVIRONMENT" ] || [ "$ENVIRONMENT" == " " ]; then
   ENVIRONMENT="DEV"
 fi
+echo "ENVIRONMENT 2: $ENVIRONMENT"
 
 if [ "$1" == "all" ]; then
   UPDATE_ROLE=1
