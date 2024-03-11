@@ -58,31 +58,34 @@ OIDC_ROOT="$(echo "$OIDC_URL" | sed -e 's/^https:\/\///')"
 OIDC_ARN="arn:aws:iam::${RUNNER_ACCOUNT_ID}:oidc-provider/${OIDC_ROOT}"
 #AWS_ACCOUNT_ID="$RUNNER_ACCOUNT_ID"
 
+# TODO: This is duplicated from deploy.sh, fix that
+. "$DEPLOY_SCRIPTS_PATH"/.policies
+
 create_iam_role() {
   # GitHub Runner IAM Role Creation
   echo -e "${BLUE}Creating/Finding the IAM Role ${ROLE_NAME}...${RED}"
 
-  (
+  {
     aws iam get-role --role-name "$ROLE_NAME" --region "$REGION" "${PROFILE_ARG[@]}" > /dev/null &&
     echo -e "${CHECKMARK} Found the IAM Role ${BOLD}${GREEN}${ROLE_NAME}"
-  ) || (
+  } || {
     echo -e "${X} The IAM Role ${BOLD}${RED}${ROLE_NAME}${RESET} was not found"
     echo -e "${BLUE}Attempting to create the IAM Role ${ROLE_NAME}...${RED}"
-    (
+    {
       aws iam create-role \
           --role-name "${ROLE_NAME}" \
           --assume-role-policy-document "${TRUSTED_POLICY}" \
           --tags "${TAGS[0]}" \
           > /dev/null
-    ) && echo -e "${CHECKMARK} Created the IAM Role ${BOLD}${GREEN}${ROLE_NAME}"
-  ) || (echo -e "${X} The IAM Role ${BOLD}${RED}${ROLE_NAME}${RESET} was unable to be created" && exit 1)
+    } && echo -e "${CHECKMARK} Created the IAM Role ${BOLD}${GREEN}${ROLE_NAME}"
+  } || { echo -e "${X} The IAM Role ${BOLD}${RED}${ROLE_NAME}${RESET} was unable to be created" && exit 1 }
 
   # Updates the GitHub Runner IAM Role to keep all Policies up to date
   echo -e "${BLUE}Updating the IAM Role ${ROLE_NAME}...${RED}"
-  (
+  {
     aws iam update-assume-role-policy --role-name "${ROLE_NAME}" --policy-document "${TRUSTED_POLICY}" --region "$REGION" "${PROFILE_ARG[@]}" &&
     echo -e "${CHECKMARK} Successfully updated the IAM Role ${BOLD}${GREEN}${ROLE_NAME}"
-  ) || ( echo -e "${X} The IAM Role ${BOLD}${RED}${ROLE_NAME}${RESET} was unable to be updated" && exit 1 )
+  } || { echo -e "${X} The IAM Role ${BOLD}${RED}${ROLE_NAME}${RESET} was unable to be updated" && exit 1 }
 }
 
 # Adding All Policies to an Array to Make Creation Simpler
