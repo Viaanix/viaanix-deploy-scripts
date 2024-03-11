@@ -91,22 +91,24 @@ create_iam_role() {
 POLICIES=("S3 ${S3_POLICY}" "CloudFormation ${CLOUD_FORMATION_POLICY}" "IAM ${IAM_POLICY}" "CloudWatch ${CLOUDWATCH_POLICY}")
 
 add_custom_policies() {
-  # Adding Custom Policies to the Array
-  for ROLE_ARG in "${ROLE_ARGS[@]}"; do
-    ROLE_ARG="${ROLE_ARG//\"/}"
-    if [ -n "$ROLE_ARG" ] && [ "$ROLE_ARG" != " " ]; then
-      case "$ROLE_ARG" in
-        'ec2') POLICIES+=("EC2 ${EC2_POLICY}") ;;
-        'eventbridge') POLICIES+=("EventBridge ${EVENTBRIDGE_POLICY}") ;;
-        'lambda') POLICIES+=("Lambda ${LAMBDA_POLICY}") ;;
-        'sqs') POLICIES+=("SQS ${SQS_POLICY}") ;;
-        'ssm') POLICIES+=("SSM ${SSM_POLICY}") ;;
-        'vpc') POLICIES+=("VPC ${VPC_POLICY}") ;;
-        'iot') POLICIES+=("IoT ${IoT_POLICY}") ;;
-        *) echo -e "${X} The Role Argument ${BOLD}${RED}${ROLE_ARG}${RESET} is not valid" ;;
-      esac
-    fi
-  done
+  while IFS=' ' read -r ALL_ROLE_ARGS; do
+    # Adding Custom Policies to the Array
+    for ROLE_ARG in "${ALL_ROLE_ARGS[@]}"; do
+      ROLE_ARG="${ROLE_ARG//\"/}"
+      if [ -n "$ROLE_ARG" ] && [ "$ROLE_ARG" != " " ]; then
+        case "$ROLE_ARG" in
+          'ec2') POLICIES+=("EC2 ${EC2_POLICY}") ;;
+          'eventbridge') POLICIES+=("EventBridge ${EVENTBRIDGE_POLICY}") ;;
+          'lambda') POLICIES+=("Lambda ${LAMBDA_POLICY}") ;;
+          'sqs') POLICIES+=("SQS ${SQS_POLICY}") ;;
+          'ssm') POLICIES+=("SSM ${SSM_POLICY}") ;;
+          'vpc') POLICIES+=("VPC ${VPC_POLICY}") ;;
+          'iot') POLICIES+=("IoT ${IoT_POLICY}") ;;
+          *) echo -e "${X} The Role Argument ${BOLD}${RED}${ROLE_ARG}${RESET} is not valid" ;;
+        esac
+      fi
+    done
+  done < <(echo "$ROLE_ARGS")
 }
 
 # Creates the Policies for the GitHub Runner Role as Inline
