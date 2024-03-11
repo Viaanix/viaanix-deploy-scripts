@@ -56,7 +56,7 @@ RUNNER_ROOT_ARN="arn:aws:iam::${RUNNER_ACCOUNT_ID}:root"
 ROLE_NAME="${APPLICATION_NAME}AssumeRole${ENVIRONMENT}"
 OIDC_ROOT="$(echo "$OIDC_URL" | sed -e 's/^https:\/\///')"
 OIDC_ARN="arn:aws:iam::${RUNNER_ACCOUNT_ID}:oidc-provider/${OIDC_ROOT}"
-AWS_ACCOUNT_ID="$RUNNER_ACCOUNT_ID"
+#AWS_ACCOUNT_ID="$RUNNER_ACCOUNT_ID"
 
 # Policy that Allows the GitHub Runner to Assume this Account
 TRUSTED_POLICY=$(echo "\
