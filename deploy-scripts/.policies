@@ -9,15 +9,10 @@ TRUSTED_POLICY=$(echo "\
       \"Sid\": \"AllowAssumeRole\",\
       \"Effect\": \"Allow\",\
       \"Principal\": {\
-        \"AWS\": \"${RUNNER_ROOT_ARN}\"\
-      },\
-      \"Action\": \"sts:AssumeRole\"\
-    },\
-    {\
-      \"Sid\": \"AllowAssumeRoleSession\",\
-      \"Effect\": \"Allow\",\
-      \"Principal\": {\
-        \"AWS\": \"arn:aws:sts::${RUNNER_ACCOUNT_ID}:assumed-role/GitHubRunnerAssumeRoleForIAM/${LOWERCASE_APPLICATION_NAME}-assume-session-via-oidc\"\
+        \"AWS\": [\
+          \"${RUNNER_ROOT_ARN}\",\
+          \"arn:aws:sts::${AWS_ACCOUNT_ID}:assumed-role/GitHubRunnerAssumeRoleForIAM/${LOWERCASE_APPLICATION_NAME}-assume-session-via-oidc\"\
+        ]\
       },\
       \"Action\": \"sts:AssumeRole\"\
     }\
