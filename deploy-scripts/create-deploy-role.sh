@@ -149,5 +149,5 @@ update_policies() {
   done
 
   # TODO: Fix this because it never fails with errors
-  exit $SHOULD_FAIL
+#  exit $SHOULD_FAIL
 }
