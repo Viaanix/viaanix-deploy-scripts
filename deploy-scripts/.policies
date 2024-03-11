@@ -1,0 +1,503 @@
+#!/bin/bash
+
+# Policy that Allows the GitHub Runner to Assume this Account
+TRUSTED_POLICY=$(echo "\
+{\
+  \"Version\": \"2012-10-17\",\
+  \"Statement\": [\
+    {\
+      \"Sid\": \"AllowAssumeRoleOIDC\",\
+      \"Effect\": \"Allow\",\
+      \"Principal\": {\
+        \"Federated\": \"$OIDC_ARN\"\
+      },\
+      \"Action\": \"sts:AssumeRoleWithWebIdentity\",\
+      \"Condition\": {\
+        \"StringLike\": {\
+          \"$OIDC_ROOT:sub\": \"repo:Viaanix/*\"
+        },\
+        \"StringEquals\": {\
+          \"$OIDC_ROOT:aud\": \"sts.amazonaws.com\"
+        }\
+      }\
+    },\
+    {\
+      \"Sid\": \"AllowAssumeRole\",\
+      \"Effect\": \"Allow\",\
+      \"Principal\": {\
+        \"AWS\": \"${RUNNER_ROOT_ARN}\"\
+      },\
+      \"Action\": \"sts:AssumeRole\"\
+    },\
+    {\
+      \"Sid\": \"AllowAssumeRoleSession\",\
+      \"Effect\": \"Allow\",\
+      \"Principal\": {\
+        \"AWS\": \"arn:aws:sts::${RUNNER_ACCOUNT_ID}:assumed-role/GitHubRunnerAssumeRoleForIAM/${LOWERCASE_APPLICATION_NAME}-assume-session-via-oidc\"\
+      },\
+      \"Action\": \"sts:AssumeRole\"\
+    }\
+  ]\
+}" | jq -c '.')
+
+# Least Access Needed for Cloud Formation - Always Needed
+CLOUD_FORMATION_POLICY=$(echo "\
+{\
+  \"Version\": \"2012-10-17\",\
+  \"Statement\": [\
+    {\
+      \"Sid\": \"AllowBasicCloudFormation\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"cloudformation:CreateChangeSet\",\
+        \"cloudformation:DescribeChangeSet\",\
+        \"cloudformation:DeleteChangeSet\",\
+        \"cloudformation:ExecuteChangeSet\",\
+        \"cloudformation:DescribeStacks\",\
+        \"cloudformation:DescribeStackEvents\",\
+        \"cloudformation:GetTemplateSummary\"\
+      ],\
+      \"Resource\": [\
+        \"arn:aws:s3:::${SAM_MANAGED_BUCKET}/*\",\
+        \"arn:aws:cloudformation:${REGION}:${AWS_ACCOUNT_ID}:stack/${APPLICATION_NAME}${ENVIRONMENT}/*\",\
+        \"arn:aws:cloudformation:${REGION}:aws:transform/Serverless-2016-10-31\"\
+      ]\
+    },\
+    {\
+      \"Sid\": \"AllowBasicCloudFormationResources\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"cloudformation:DeleteResource\",\
+        \"cloudformation:GetResource\",\
+        \"cloudformation:UpdateResource\",\
+        \"cloudformation:CreateResource\"\
+      ],\
+      \"Resource\": [\
+        \"*\"\
+      ]\
+    }\
+  ]\
+}" | jq -c '.')
+
+# Least Access Needed for CloudWatch - Always Needed
+CLOUDWATCH_POLICY=$(echo "\
+{\
+  \"Version\": \"2012-10-17\",\
+  \"Statement\": [\
+    {\
+      \"Sid\": \"AllowBasicLogs\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"logs:CreateLogGroup\",\
+        \"logs:DescribeLogGroups\",\
+        \"logs:DeleteLogGroup\",\
+        \"logs:TagResource\",\
+        \"logs:UntagResource\",\
+        \"logs:ListTagsForResource\",\
+        \"logs:UntagLogGroup\",\
+        \"logs:TagLogGroup\",\
+        \"logs:ListTagsLogGroup\"\
+      ],\
+      \"Resource\": [\
+        \"arn:aws:logs:${REGION}:${AWS_ACCOUNT_ID}:log-group:/aws/events/${APPLICATION_NAME}*${ENVIRONMENT}:log-stream:\",\
+        \"arn:aws:logs:${REGION}:${AWS_ACCOUNT_ID}:log-group:/aws/events/${APPLICATION_NAME}*${ENVIRONMENT}\",\
+        \"arn:aws:logs:${REGION}:${AWS_ACCOUNT_ID}:log-group:${APPLICATION_NAME}*${ENVIRONMENT}:log-stream:\",\
+        \"arn:aws:logs:${REGION}:${AWS_ACCOUNT_ID}:log-group:${APPLICATION_NAME}*${ENVIRONMENT}\",\
+        \"arn:aws:logs:${REGION}:${AWS_ACCOUNT_ID}:log-group:*${LOWERCASE_APPLICATION_NAME}:log-stream:\",\
+        \"arn:aws:logs:${REGION}:${AWS_ACCOUNT_ID}:log-group:*${LOWERCASE_APPLICATION_NAME}\",\
+        \"arn:aws:logs:${REGION}:${AWS_ACCOUNT_ID}:log-group::log-stream:\"\
+      ]\
+    },\
+    {\
+      \"Sid\": \"AllowBasicLogsResources\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"logs:CreateLogDelivery\",\
+        \"logs:GetLogDelivery\",\
+        \"logs:ListLogDeliveries\",\
+        \"logs:UpdateLogDelivery\",\
+        \"logs:PutResourcePolicy\",\
+        \"logs:DescribeResourcePolicies\",\
+        \"logs:DeleteResourcePolicy\"\
+      ],\
+      \"Resource\": [\
+        \"*\"\
+      ]\
+    }\
+  ]\
+}" | jq -c '.')
+
+# Least Access Needed for S3 - Always Needed for SAM_MANAGED_BUCKET
+S3_POLICY=$(echo "\
+{\
+  \"Version\": \"2012-10-17\",\
+  \"Statement\": [\
+    {\
+      \"Sid\": \"AllowBasicS3\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"s3:PutObject\",\
+        \"s3:GetObject\",\
+        \"s3:ListBucket\",\
+        \"s3:ListObjects\",\
+        \"s3:DeleteObject\",\
+        \"s3:GetBucketTagging\",\
+        \"s3:GetBucketVersioning\",\
+        \"s3:PutBucketVersioning\",\
+        \"s3:PutBucketPublicAccessBlock\",\
+        \"s3:GetBucketPublicAccessBlock\",\
+        \"s3:PutPublicAccessBlock\",\
+        \"s3:GetPublicAccessBlock\",\
+        \"s3:GetAccountPublicAccessBlock\",\
+        \"s3:PutBucketOwnershipControls\",\
+        \"s3:GetBucketOwnershipControls\"\
+      ],\
+      \"Resource\": [\
+        \"arn:aws:s3:::${SAM_MANAGED_BUCKET}/*\",\
+        \"arn:aws:s3:::${SAM_MANAGED_BUCKET}\",\
+        \"arn:aws:s3:::*${LOWERCASE_APPLICATION_NAME}/*\",\
+        \"arn:aws:s3:::*${LOWERCASE_APPLICATION_NAME}\"\
+      ]\
+    },\
+    {\
+      \"Sid\": \"AllowBasicS3Resources\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"s3:CreateBucket\",\
+        \"s3:DeleteBucket\",\
+        \"s3:PutBucketTagging\",\
+        \"s3:GetBucketPolicy\",\
+        \"s3:PutBucketPolicy\",\
+        \"s3:DeleteBucketPolicy\",\
+        \"s3:PutBucketPublicAccessBlock\",\
+        \"s3:GetAccountPublicAccessBlock\"\
+      ],\
+      \"Resource\": [\
+        \"*\"\
+      ]\
+    }\
+  ]\
+}" | jq -c '.')
+
+# Least Access Needed for Lambda
+LAMBDA_POLICY=$(echo "\
+{\
+  \"Version\": \"2012-10-17\",\
+  \"Statement\": [\
+    {\
+      \"Sid\": \"AllowBasicLambda\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"lambda:CreateFunction\",\
+        \"lambda:GetFunction\",\
+        \"lambda:UpdateFunctionConfiguration\",\
+        \"lambda:UpdateFunctionCode\",\
+        \"lambda:DeleteFunction\",\
+        \"lambda:ListTags\",\
+        \"lambda:TagResource\",\
+        \"lambda:UntagResource\",\
+        \"lambda:AddPermission\",\
+        \"lambda:RemovePermission\",\
+        \"lambda:GetLayerVersion\",\
+        \"lambda:ListLayerVersions\",\
+        \"lambda:PublishLayerVersion\",\
+        \"lambda:DeleteLayerVersion\",\
+        \"lambda:AddLayerVersionPermission\",\
+        \"lambda:RemoveLayerVersionPermission\",\
+        \"lambda:PutFunctionEventInvokeConfig\",\
+        \"lambda:UpdateFunctionEventInvokeConfig\",\
+        \"lambda:DeleteFunctionEventInvokeConfig\"\
+      ],\
+      \"Resource\": [\
+        \"arn:aws:lambda:*:${AWS_ACCOUNT_ID}:layer:${APPLICATION_NAME}*:*\",\
+        \"arn:aws:lambda:*:${AWS_ACCOUNT_ID}:layer:${APPLICATION_NAME}*\",\
+        \"arn:aws:lambda:*:${AWS_ACCOUNT_ID}:function:${APPLICATION_NAME}*${ENVIRONMENT}\",\
+        \"arn:aws:lambda:*:${AWS_ACCOUNT_ID}:function:${APPLICATION_NAME}*${ENVIRONMENT}:*\"\
+      ]\
+    }\
+  ]\
+}" | jq -c '.')
+
+# Least Access Needed for IAM - Always Needed
+IAM_POLICY=$(echo "\
+{\
+  \"Version\": \"2012-10-17\",\
+  \"Statement\": [\
+    {\
+      \"Sid\": \"AllowBasicIAM\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"iam:PassRole\",\
+        \"iam:AttachRolePolicy\",\
+        \"iam:DetachRolePolicy\",\
+        \"iam:TagRole\",\
+        \"iam:UntagRole\",\
+        \"iam:TagPolicy\",\
+        \"iam:UntagPolicy\",\
+        \"iam:CreateRole\",\
+        \"iam:GetRole\",\
+        \"iam:UpdateRole\",\
+        \"iam:UpdateAssumeRolePolicy\",\
+        \"iam:DeleteRole\",\
+        \"iam:GetRolePolicy\",\
+        \"iam:PutRolePolicy\",\
+        \"iam:DeleteRolePolicy\",\
+        \"iam:GetOpenIDConnectProvider\",\
+        \"iam:UpdateOpenIDConnectProvider\",\
+        \"iam:DeleteOpenIDConnectProvider\",\
+        \"iam:UpdateOpenIDConnectProviderThumbprint\",\
+        \"iam:AddClientIDToOpenIDConnectProvider\",\
+        \"iam:RemoveClientIDFromOpenIDConnectProvider\",\
+        \"iam:AddRoleToInstanceProfile\",\
+        \"iam:CreateInstanceProfile\",\
+        \"iam:DeleteInstanceProfile\",\
+        \"iam:ListInstanceProfileTags\",\
+        \"iam:ListInstanceProfilesForRole\",\
+        \"iam:RemoveRoleFromInstanceProfile\",\
+        \"iam:TagInstanceProfile\",\
+        \"iam:UntagInstanceProfile\",\
+        \"iam:GetInstanceProfile\"\
+      ],\
+      \"Resource\": [\
+        \"arn:aws:iam::${AWS_ACCOUNT_ID}:role/${APPLICATION_NAME}*\",\
+        \"arn:aws:iam::${AWS_ACCOUNT_ID}:role/${APPLICATION_NAME}EC2Role${ENVIRONMENT}\",\
+        \"arn:aws:iam::${AWS_ACCOUNT_ID}:policy/${APPLICATION_NAME}*\",\
+        \"arn:aws:iam::${AWS_ACCOUNT_ID}:oidc-provider/${OIDC_ROOT}\",\
+        \"arn:aws:iam::${AWS_ACCOUNT_ID}:instance-profile/${APPLICATION_NAME}EC2InstanceProfile${ENVIRONMENT}\"\
+      ]\
+    },\
+    {\
+      \"Sid\": \"AllowBasicIAMResources\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"iam:ListInstanceProfiles\"\
+      ],\
+      \"Resource\": [\
+        \"*\"\
+      ]\
+    }\
+  ]\
+}" | jq -c '.')
+
+# Least Access Needed for EventBridge
+EVENTBRIDGE_POLICY=$(echo "\
+{\
+  \"Version\": \"2012-10-17\",\
+  \"Statement\": [\
+    {\
+      \"Sid\": \"AllowBasicEventBridge\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"events:TagResource\",\
+        \"events:UntagResource\",\
+        \"events:CreateEventBus\",\
+        \"events:DeleteEventBus\",\
+        \"events:PutPermission\",\
+        \"events:RemovePermission\",\
+        \"events:PutEvents\",\
+        \"events:DescribeEventBus\",\
+        \"events:DescribeRule\",\
+        \"events:PutTargets\",\
+        \"events:RemoveTargets\",\
+        \"events:PutRule\",\
+        \"events:DeleteRule\",\
+        \"events:CreateArchive\",\
+        \"events:DescribeArchive\",\
+        \"events:UpdateArchive\",\
+        \"events:DeleteArchive\"\
+      ],\
+      \"Resource\": [\
+        \"arn:aws:events:${REGION}:${AWS_ACCOUNT_ID}:rule/${APPLICATION_NAME}*\",\
+        \"arn:aws:events:${REGION}:${AWS_ACCOUNT_ID}:archive/${APPLICATION_NAME}Archive${ENVIRONMENT}\",\
+        \"arn:aws:events:${REGION}:${AWS_ACCOUNT_ID}:event-bus/default\"\
+      ]\
+    },\
+    {\
+      \"Sid\": \"AllowBasicEventBridgeResources\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"events:ListArchives\"\
+      ],\
+      \"Resource\": [\
+        \"*\"\
+      ]\
+    }\
+  ]\
+}" | jq -c '.')
+
+# Least Access Needed for SQS
+SQS_POLICY=$(echo "\
+{\
+  \"Version\": \"2012-10-17\",\
+  \"Statement\": [\
+    {\
+      \"Sid\": \"AllowBasicSQS\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"sqs:createqueue\",\
+        \"sqs:getqueueattributes\",\
+        \"sqs:setqueueattributes\",\
+        \"sqs:listqueuetags\",\
+        \"sqs:tagqueue\",\
+        \"sqs:untagqueue\",\
+        \"sqs:deletequeue\"\
+      ],\
+      \"Resource\": [\
+        \"arn:aws:sqs:${REGION}:${AWS_ACCOUNT_ID}:${APPLICATION_NAME}DeadLetterQueue${ENVIRONMENT}\"\
+      ]\
+    }\
+  ]\
+}" | jq -c '.')
+
+# Least Access Needed for SSM
+SSM_POLICY=$(echo "\
+{\
+  \"Version\": \"2012-10-17\",\
+  \"Statement\": [\
+    {\
+      \"Sid\": \"AllowBasicSSM\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"ssm:SendCommand\"\
+      ],\
+      \"Resource\": [\
+        \"arn:aws:ec2:${REGION}:${AWS_ACCOUNT_ID}:instance/*\",\
+        \"arn:aws:ssm:${REGION}::document/AWS-RunShellScript\"\
+      ]\
+    },\
+    {\
+      \"Sid\": \"AllowSSMGetCommandInvocation\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"ssm:GetCommandInvocation\"\
+      ],\
+      \"Resource\": [\
+        \"arn:aws:ssm:${REGION}:${AWS_ACCOUNT_ID}:*\"\
+      ]\
+    }\
+  ]\
+}" | jq -c '.')
+
+# Least Access Needed for VPC
+VPC_POLICY=$(echo "\
+{\
+  \"Version\": \"2012-10-17\",\
+  \"Statement\": [\
+    {\
+      \"Sid\": \"AllowBasicVPC\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"ec2:RunInstances\",\
+        \"ec2:CreateSecurityGroup\",\
+        \"ec2:DeleteSecurityGroup\"\
+      ],\
+      \"Resource\": [\
+        \"arn:aws:ec2:${REGION}:${AWS_ACCOUNT_ID}:${APPLICATION_NAME}${ENVIRONMENT}/*\"\
+      ]\
+    },\
+    {\
+      \"Sid\": \"AllowBasicVPCResources\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"s3:CreateBucket\",\
+        \"s3:GetAccountPublicAccessBlock\"\
+      ],\
+      \"Resource\": [\
+        \"*\"\
+      ]\
+    }\
+  ]\
+}" | jq -c '.')
+
+# TODO: Configure correct image id, run instances
+# Least Access Needed for EC2
+EC2_POLICY=$(echo "\
+{\
+  \"Version\": \"2012-10-17\",\
+  \"Statement\": [\
+    {\
+      \"Sid\": \"AllowBasicEC2\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"ec2:CreateLaunchTemplate\",\
+        \"ec2:CreateLaunchTemplateVersion\",\
+        \"ec2:DeleteLaunchTemplate\",\
+        \"ec2:DeleteLaunchTemplateVersions\",\
+        \"ec2:GetLaunchTemplateData\",\
+        \"ec2:ModifyLaunchTemplate\",\
+        \"ec2:CreateTags\",\
+        \"ec2:DeleteTags\",\
+        \"ec2:DescribeImageAttribute\",\
+        \"autoscaling:SetDesiredCapacity\",\
+        \"autoscaling:CreateAutoScalingGroup\",\
+        \"autoscaling:DeleteAutoScalingGroup\",\
+        \"autoscaling:UpdateAutoScalingGroup\",\
+        \"autoscaling:TerminateInstanceInAutoScalingGroup\",\
+        \"autoscaling:CreateOrUpdateTags\",\
+        \"autoscaling:DeleteTags\"\
+      ],\
+      \"Resource\": [\
+        \"arn:aws:ec2:${REGION}:${AWS_ACCOUNT_ID}:launch-template/*\",\
+        \"arn:aws:ec2:${REGION}:${AWS_ACCOUNT_ID}:instance/*\",\
+        \"arn:aws:autoscaling:${REGION}:${AWS_ACCOUNT_ID}:autoScalingGroup:*:autoScalingGroupName/${APPLICATION_NAME}AutoScalingGroup*${ENVIRONMENT}\"\
+      ]\
+    },\
+    {\
+      \"Sid\": \"AllowBasicEC2Resources\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"ec2:DescribeLaunchTemplates\",\
+        \"ec2:DescribeLaunchTemplateVersions\",\
+        \"ec2:DescribeAvailabilityZones\",\
+        \"ec2:DescribeAccountAttributes\",\
+        \"ec2:DescribeSubnets\",\
+        \"ec2:DescribeImages\",\
+        \"ec2:RunInstances\",\
+        \"autoscaling:DescribeAutoScalingGroups\",\
+        \"autoscaling:DescribeTags\",\
+        \"autoscaling:DescribeScalingActivities\"\
+      ],\
+      \"Resource\": [\
+        \"*\"\
+      ]\
+    }\
+  ]\
+}" | jq -c '.')
+
+# Least Access Needed for IoT
+IoT_POLICY=$(echo "\
+{\
+  \"Version\": \"2012-10-17\",\
+  \"Statement\": [\
+    {\
+      \"Sid\": \"AllowBasicIoT\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"iot:CreateTopicRule\",\
+        \"iot:DeleteTopicRule\",\
+        \"iot:GetTopicRule\",\
+        \"iot:ReplaceTopicRule\",\
+        \"iot:EnableTopicRule\",\
+        \"iot:DisableTopicRule\",\
+        \"iot:TagResource\",\
+        \"iot:UntagResource\",\
+        \"iot:ListTagsForResource\"\
+      ],\
+      \"Resource\": [\
+        \"arn:aws:iot:${REGION}:${AWS_ACCOUNT_ID}:rule/${APPLICATION_NAME}*IoTTopicRule${ENVIRONMENT}\",\
+        \"arn:aws:iot:${REGION}:${AWS_ACCOUNT_ID}:rule/*IoTTopicEvent*\"\
+      ]\
+    },\
+    {\
+      \"Sid\": \"AllowBasicIoTResources\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": [\
+        \"iot:ListTopicRules\"\
+      ],\
+      \"Resource\": [\
+        \"*\"\
+      ]\
+    }\
+  ]\
+}" | jq -c '.')
+#        \"arn:aws:iot:${REGION}:${AWS_ACCOUNT_ID}:destination/${DestinationType}/*\"\

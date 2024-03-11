@@ -47,8 +47,6 @@ else
   DEPLOY_SCRIPTS_PATH="/deploy-scripts"
 fi
 
-. "$DEPLOY_SCRIPTS_PATH"/.bash_styling
-
 if [ -z "$ENVIRONMENT" ] || [ "$ENVIRONMENT" == " " ]; then
   ENVIRONMENT="DEV"
 fi
@@ -133,6 +131,8 @@ fi
 #  )
 #}
 
+. "$DEPLOY_SCRIPTS_PATH"/.bash_styling
+
 verify() {
   if [ "$VERBOSE" -eq 1 ]; then
     echo -e "\n$(_bash_styling bold_light_blue)* Verifying the Status of the AWS Credentials...$(_bash_styling reset_all)" > /dev/"$TTY"
@@ -176,7 +176,17 @@ assume_deploy_role() {
 
 verify
 
-assume_deploy_role
+create_deploy_role() {
+  . "$DEPLOY_SCRIPTS_PATH"/create-deploy-role.sh
+
+  create_iam_role
+  add_custom_policies
+  update_policies
+}
+
+create_deploy_role
+
+#assume_deploy_role
 
 aws sts get-caller-identity "${PROFILE_ARG[@]}" | jq ".Account" | tr -d "\""
 
