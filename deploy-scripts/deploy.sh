@@ -174,7 +174,68 @@ assume_deploy_role() {
   fi
 }
 
+parse_tags() {
+  # Parsing Tags to a Usable Form for the AWS CLI
+
+  if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
+    read -r -a TAGSET <<< "$(get_env_var "TAGS")"
+  else
+    read -r -a TAGSET <<< "$TAGS"
+  fi
+
+  TAGS=""
+  KEYS=()
+
+  declare -A TAGS_FOR_DEPLOY
+
+#  while IFS=' ' read -r TAG; do
+#    TAG="${TAG//\"/}"
+#    if [[ -n $TAG ]] && [[ $TAG != " " ]]; then
+#      KEY="$( (echo "$TAG" | cut -d "=" -f1))"
+#      VALUE="$( (echo "$TAG" | cut -d "=" -f2) | sed -e 's/'\''//')"
+#      if [[ $TAGS == "" ]]; then
+#        TAGS="{\"Key\":\"${KEY}\",\"Value\":\"${VALUE}\"}"
+#      else
+#        TAGS="$TAGS,{\"Key\":\"${KEY}\",\"Value\":\"${VALUE}\"}"
+#      fi
+#      KEYS+=("$KEY")
+#      TAGS_FOR_DEPLOY[$KEY]=$VALUE
+#    fi
+#  done <<< "${TAGSET[@]}"
+
+  for TAG in "${TAGSET[@]}"; do
+    TAG="${TAG//\"/}"
+    if [[ -n $TAG ]] && [[ $TAG != " " ]]; then
+      KEY="$( (echo "$TAG" | cut -d "=" -f1))"
+      VALUE="$( (echo "$TAG" | cut -d "=" -f2) | sed -e 's/'\''//')"
+      if [[ $TAGS == "" ]]; then
+        TAGS="{\"Key\":\"${KEY}\",\"Value\":\"${VALUE}\"}"
+      else
+        TAGS="$TAGS,{\"Key\":\"${KEY}\",\"Value\":\"${VALUE}\"}"
+      fi
+      KEYS+=("$KEY")
+      TAGS_FOR_DEPLOY[$KEY]=$VALUE
+    fi
+  done
+
+  # Updating Existing Tags
+  NEW_TAGSET=""
+  for KEY in "${KEYS[@]}"; do
+    if [[ $NEW_TAGSET == "" ]]; then
+      NEW_TAGSET="$NEW_TAGSET{Key=$KEY,Value=${TAGS_FOR_DEPLOY[$KEY]}}"
+    else
+      NEW_TAGSET="$NEW_TAGSET,{Key=$KEY,Value=${TAGS_FOR_DEPLOY[$KEY]}}"
+    fi
+  done
+
+  NEW_TAGSET="[$NEW_TAGSET]"
+
+  echo "[$TAGS]" "[$NEW_TAGSET]"
+}
+
 verify
+
+parse_tags
 
 create_deploy_role() {
   . "$DEPLOY_SCRIPTS_PATH"/create-deploy-role.sh
@@ -190,50 +251,8 @@ create_deploy_role
 
 aws sts get-caller-identity "${PROFILE_ARG[@]}" | jq ".Account" | tr -d "\""
 
-#parse_tags() {
-#  # Parsing Tags to a Usable Form for the AWS CLI
-#
-#  if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
-#    read -r -a TAGSET <<< "$(get_env_var "TAGS")"
-#  else
-#    read -r -a TAGSET <<< "$TAGS"
-#  fi
-#
-#  TAGS=""
-#  KEYS=()
-#
-#  declare -A TAGS_FOR_DEPLOY
-#
-#  for TAG in "${TAGSET[@]}"; do
-#    TAG="${TAG//\"/}"
-#    if [[ -n $TAG ]] && [[ $TAG != " " ]]; then
-#      KEY="$( (echo "$TAG" | cut -d "=" -f1))"
-#      VALUE="$( (echo "$TAG" | cut -d "=" -f2) | sed -e 's/'\''//')"
-#      if [[ $TAGS == "" ]]; then
-#        TAGS="{\"Key\":\"${KEY}\",\"Value\":\"${VALUE}\"}"
-#      else
-#        TAGS="$TAGS,{\"Key\":\"${KEY}\",\"Value\":\"${VALUE}\"}"
-#      fi
-#      KEYS+=("$KEY")
-#      TAGS_FOR_DEPLOY[$KEY]=$VALUE
-#    fi
-#  done
-#
-#  # Updating Existing Tags
-#  NEW_TAGSET=""
-#  for KEY in "${KEYS[@]}"; do
-#    if [[ $NEW_TAGSET == "" ]]; then
-#      NEW_TAGSET="$NEW_TAGSET{Key=$KEY,Value=${TAGS_FOR_DEPLOY[$KEY]}}"
-#    else
-#      NEW_TAGSET="$NEW_TAGSET,{Key=$KEY,Value=${TAGS_FOR_DEPLOY[$KEY]}}"
-#    fi
-#  done
-#
-#  NEW_TAGSET="[$NEW_TAGSET]"
-#
-#  echo "[$TAGS]" "[$NEW_TAGSET]"
-#}
-#
+
+
 #RUNNER_ACCOUNT_ID=$(verify)
 #
 #if [ -z "$AWS_ACCOUNT_ID" ] || [ "$AWS_ACCOUNT_ID" == " " ]; then
