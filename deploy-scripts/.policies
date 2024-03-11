@@ -11,7 +11,8 @@ TRUSTED_POLICY=$(echo "\
       \"Principal\": {\
         \"AWS\": [\
           \"${RUNNER_ROOT_ARN}\",\
-          \"arn:aws:sts::${AWS_ACCOUNT_ID}:assumed-role/GitHubRunnerAssumeRoleForIAM/${LOWERCASE_APPLICATION_NAME}-assume-session-via-oidc\"\
+          \"arn:aws:sts::${AWS_ACCOUNT_ID}:assumed-role/GitHubRunnerAssumeRoleForIAM/${LOWERCASE_APPLICATION_NAME}-assume-session-via-oidc\",\
+          \"arn:aws:sts::${AWS_ACCOUNT_ID}:assumed-role/GitHubRunnerAssumeRoleForIAM/git-hub-runner-assume-session-via-oidc\"\
         ]\
       },\
       \"Action\": \"sts:AssumeRole\"\
