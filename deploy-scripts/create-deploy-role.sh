@@ -104,7 +104,7 @@ add_custom_policies() {
           'ssm') POLICIES+=("SSM ${SSM_POLICY}") ;;
           'vpc') POLICIES+=("VPC ${VPC_POLICY}") ;;
           'iot') POLICIES+=("IoT ${IoT_POLICY}") ;;
-          *) echo -e "${X} The Role Argument ${BOLD}${RED}${ROLE_ARG}${RESET} is not valid" ;;
+          *) echo -e "${X} The Role Argument ${BOLD}${RED}${ROLE_ARG}${RESET} is not valid" && exit 1 ;;
         esac
       fi
     done
