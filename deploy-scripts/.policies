@@ -6,22 +6,6 @@ TRUSTED_POLICY=$(echo "\
   \"Version\": \"2012-10-17\",\
   \"Statement\": [\
     {\
-      \"Sid\": \"AllowAssumeRoleOIDC\",\
-      \"Effect\": \"Allow\",\
-      \"Principal\": {\
-        \"Federated\": \"$OIDC_ARN\"\
-      },\
-      \"Action\": \"sts:AssumeRoleWithWebIdentity\",\
-      \"Condition\": {\
-        \"StringLike\": {\
-          \"$OIDC_ROOT:sub\": \"repo:Viaanix/*\"
-        },\
-        \"StringEquals\": {\
-          \"$OIDC_ROOT:aud\": \"sts.amazonaws.com\"
-        }\
-      }\
-    },\
-    {\
       \"Sid\": \"AllowAssumeRole\",\
       \"Effect\": \"Allow\",\
       \"Principal\": {\
@@ -39,6 +23,22 @@ TRUSTED_POLICY=$(echo "\
     }\
   ]\
 }" | jq -c '.')
+#    {\
+#      \"Sid\": \"AllowAssumeRoleOIDC\",\
+#      \"Effect\": \"Allow\",\
+#      \"Principal\": {\
+#        \"Federated\": \"$OIDC_ARN\"\
+#      },\
+#      \"Action\": \"sts:AssumeRoleWithWebIdentity\",\
+#      \"Condition\": {\
+#        \"StringLike\": {\
+#          \"$OIDC_ROOT:sub\": \"repo:Viaanix/*\"
+#        },\
+#        \"StringEquals\": {\
+#          \"$OIDC_ROOT:aud\": \"sts.amazonaws.com\"
+#        }\
+#      }\
+#    },\
 
 ALLOW_ASSUME_ROLE_POLICY=$(echo "\
 {\
