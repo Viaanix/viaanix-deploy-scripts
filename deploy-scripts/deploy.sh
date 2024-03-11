@@ -101,7 +101,7 @@ if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
   # Parsing Environment Variables to Other Usable Variables
   LOWERCASE_NAME="$(echo "$APPLICATION_NAME" | sed -e 's|\([A-Z][^A-Z]\)| \1|g' -e 's|\([a-z]\)\([A-Z]\)|\1 \2|g' | sed 's/^ *//g' | tr '[:upper:]' '[:lower:]' | tr " " "-")"
   LOWERCASE_APPLICATION_NAME="$LOWERCASE_NAME-$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]')"
-  SAM_MANAGED_BUCKET="$LOWERCASE_NAME-sam-managed-$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]')"
+  SAM_MANAGED_BUCKET="$LOWERCASE_NAME-sam-managed-viaanix-$(echo "$ENVIRONMENT" | tr '[:upper:]' '[:lower:]')"
 fi
 
 PROFILE_ARG=()
