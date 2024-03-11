@@ -298,7 +298,7 @@ create_deploy_role
 assume_deploy_role
 
 
-#aws sts get-caller-identity "${PROFILE_ARG[@]}" | jq ".Account" | tr -d "\""
+aws sts get-caller-identity "${PROFILE_ARG[@]}" | jq ".Account" | tr -d "\""
 
 
 
