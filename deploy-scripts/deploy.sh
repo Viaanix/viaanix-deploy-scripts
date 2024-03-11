@@ -260,7 +260,8 @@ parse_tags() {
   echo "[$TAGS]" "[$NEW_TAGSET]"
 }
 
-verify
+#verify
+RUNNER_ACCOUNT_ID=$(verify)
 
 assume_master_deploy_role
 #assume_deploy_role
@@ -275,14 +276,25 @@ create_deploy_role() {
   update_policies
 }
 
+#create_s3_bucket() {
+#    UPDATE_S3_BUCKET_ARGS=(
+#      "--bucket-name" "$SAM_MANAGED_BUCKET"
+#      "--tags" "$UNPARSED_TAGS"
+#      "${PROFILE_ARG[@]}"
+#      "--region" "$REGION"
+#    )
+#
+#  "$DEPLOY_SCRIPTS_PATH"/create-s3-bucket.sh "${UPDATE_S3_BUCKET_ARGS[@]}"
+##  update_s3_bucket
+#}
+
 create_deploy_role
 
 
-aws sts get-caller-identity "${PROFILE_ARG[@]}" | jq ".Account" | tr -d "\""
+#aws sts get-caller-identity "${PROFILE_ARG[@]}" | jq ".Account" | tr -d "\""
 
 
 
-#RUNNER_ACCOUNT_ID=$(verify)
 #
 #if [ -z "$AWS_ACCOUNT_ID" ] || [ "$AWS_ACCOUNT_ID" == " " ]; then
 #  AWS_ACCOUNT_ID="$RUNNER_ACCOUNT_ID"
@@ -314,43 +326,43 @@ aws sts get-caller-identity "${PROFILE_ARG[@]}" | jq ".Account" | tr -d "\""
 #    /deploy-scripts/create-deploy-role.sh "${UPDATE_ROLE_ARGS[@]}"
 #  fi
 #}
-#
-#update_s3_bucket() {
-#  UPDATE_S3_BUCKET_ARGS=(
-#    "--bucket-name" "$SAM_MANAGED_BUCKET"
-#    "--tags" "$UNPARSED_TAGS"
-#    "${PROFILE_ARG[@]}"
-#    "--region" "$REGION"
-#  )
-#
-#  if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
-#    ./deploy-scripts/create-s3-bucket.sh "${UPDATE_S3_BUCKET_ARGS[@]}"
-#  else
-#    /deploy-scripts/create-s3-bucket.sh "${UPDATE_S3_BUCKET_ARGS[@]}"
-#  fi
-#}
-#
-#deploy_sam() {
-#  DEPLOY_SAM_ARGS=(
-#      "${PROFILE_ARG[@]}"
-#      "--parameter-overrides" "ApplicationName=$APPLICATION_NAME Environment=$ENVIRONMENT Region=$REGION LowerCaseApplicationName=$LOWERCASE_APPLICATION_NAME $UNPARSED_TAGS $CUSTOM_PARAMETER_OVERRIDES"
-#      "--stack-name" "${APPLICATION_NAME}${ENVIRONMENT}"
-#      "--s3-bucket" "${SAM_MANAGED_BUCKET}"
-#      "--capabilities" "CAPABILITY_NAMED_IAM"
-#      "--region" "$REGION"
-#      "--tags" "$UNPARSED_TAGS"
-#      "--no-confirm-changeset"
-#      "--no-fail-on-empty-changeset"
-#    )
-#
-#    echo -e "\n\e[1;38;5;39m* Deploying to AWS through SAM..."
-#    if where sam 2> /dev/null | grep -qi '.cmd'; then
-#      # TODO: Add a sam build parameter..?
-#      C:/PROGRA~1/Amazon/AWSSAMCLI/bin/sam.cmd deploy "${DEPLOY_SAM_ARGS[@]}" || exit 1
-#    else
-#      sam deploy "${DEPLOY_SAM_ARGS[@]}" || exit 1
-#    fi
-#}
+
+update_s3_bucket() {
+  UPDATE_S3_BUCKET_ARGS=(
+    "--bucket-name" "$SAM_MANAGED_BUCKET"
+    "--tags" "$UNPARSED_TAGS"
+    "${PROFILE_ARG[@]}"
+    "--region" "$REGION"
+  )
+
+  "$DEPLOY_SCRIPTS_PATH"/create-s3-bucket.sh "${UPDATE_S3_BUCKET_ARGS[@]}"
+}
+
+deploy_sam() {
+  DEPLOY_SAM_ARGS=(
+      "${PROFILE_ARG[@]}"
+      "--parameter-overrides" "ApplicationName=$APPLICATION_NAME Environment=$ENVIRONMENT Region=$REGION LowerCaseApplicationName=$LOWERCASE_APPLICATION_NAME $UNPARSED_TAGS $CUSTOM_PARAMETER_OVERRIDES"
+      "--stack-name" "${APPLICATION_NAME}${ENVIRONMENT}"
+      "--s3-bucket" "${SAM_MANAGED_BUCKET}"
+      "--capabilities" "CAPABILITY_NAMED_IAM"
+      "--region" "$REGION"
+      "--tags" "$UNPARSED_TAGS"
+      "--no-confirm-changeset"
+      "--no-fail-on-empty-changeset"
+    )
+
+    echo -e "\n\e[1;38;5;39m* Deploying to AWS through SAM..."
+    if where sam 2> /dev/null | grep -qi '.cmd'; then
+      # TODO: Add a sam build parameter..?
+      C:/PROGRA~1/Amazon/AWSSAMCLI/bin/sam.cmd deploy "${DEPLOY_SAM_ARGS[@]}" || exit 1
+    else
+      sam deploy "${DEPLOY_SAM_ARGS[@]}" || exit 1
+    fi
+}
+
+update_s3_bucket
+deploy_sam
+
 #
 
 #
