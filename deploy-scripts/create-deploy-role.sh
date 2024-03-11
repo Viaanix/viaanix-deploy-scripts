@@ -88,7 +88,7 @@ create_iam_role() {
 }
 
 # Adding All Policies to an Array to Make Creation Simpler
-POLICIES=("S3 ${S3_POLICY}" "CloudFormation ${CLOUD_FORMATION_POLICY}" "IAM ${IAM_POLICY}" "CloudWatch ${CLOUDWATCH_POLICY}")
+POLICIES=("S3 ${S3_POLICY}" "CloudFormation ${CLOUD_FORMATION_POLICY}" "IAM ${IAM_POLICY}" "CloudWatch ${CLOUDWATCH_POLICY}" "AllowAssumeRole${AWS_ACCOUNT_ID}Policy ${ALLOW_ASSUME_ROLE_POLICY}")
 
 add_custom_policies() {
   while read -r -a ALL_ROLE_ARGS; do

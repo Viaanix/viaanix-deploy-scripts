@@ -40,6 +40,19 @@ TRUSTED_POLICY=$(echo "\
   ]\
 }" | jq -c '.')
 
+ALLOW_ASSUME_ROLE_POLICY=$(echo "\
+{\
+  \"Version\": \"2012-10-17\",\
+  \"Statement\": [\
+    {\
+      \"Sid\": \"AllowAssumeRole\",\
+      \"Effect\": \"Allow\",\
+      \"Action\": \"sts:AssumeRole\",\
+      \"Resource\": \"arn:aws:iam::${AWS_ACCOUNT_ID}:role/GitHubRunnerAssumeRoleForIAM\"\
+    }\
+  ]\
+}" | jq -c '.')
+
 # Least Access Needed for Cloud Formation - Always Needed
 CLOUD_FORMATION_POLICY=$(echo "\
 {\
