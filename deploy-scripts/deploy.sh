@@ -235,7 +235,9 @@ parse_tags() {
 
 verify
 
-parse_tags
+assume_deploy_role
+
+read -r -a TAGS <<< "$(parse_tags)"
 
 create_deploy_role() {
   . "$DEPLOY_SCRIPTS_PATH"/create-deploy-role.sh
@@ -247,7 +249,6 @@ create_deploy_role() {
 
 create_deploy_role
 
-#assume_deploy_role
 
 aws sts get-caller-identity "${PROFILE_ARG[@]}" | jq ".Account" | tr -d "\""
 
