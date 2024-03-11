@@ -269,7 +269,6 @@ parse_tags() {
 RUNNER_ACCOUNT_ID=$(verify)
 
 assume_master_deploy_role
-assume_deploy_role
 
 read -r -a TAGS <<< "$(parse_tags)"
 
@@ -280,6 +279,7 @@ create_deploy_role() {
   add_custom_policies
   update_policies
 }
+
 
 #create_s3_bucket() {
 #    UPDATE_S3_BUCKET_ARGS=(
@@ -294,6 +294,8 @@ create_deploy_role() {
 #}
 
 create_deploy_role
+
+assume_deploy_role
 
 
 #aws sts get-caller-identity "${PROFILE_ARG[@]}" | jq ".Account" | tr -d "\""
