@@ -93,7 +93,7 @@ POLICIES=("S3 ${S3_POLICY}" "CloudFormation ${CLOUD_FORMATION_POLICY}" "IAM ${IA
 add_custom_policies() {
   echo "ROLE_ARGS: $ROLE_ARGS"
   while IFS= read -r -a ALL_ROLE_ARGS; do
-    echo "ALL_ROLE_ARGS: $ALL_ROLE_ARGS"
+    echo "ALL_ROLE_ARGS: ${ALL_ROLE_ARGS[@]}"
     # Adding Custom Policies to the Array
     for ROLE_ARG in "${ALL_ROLE_ARGS[@]}"; do
       ROLE_ARG="${ROLE_ARG//\"/}"
