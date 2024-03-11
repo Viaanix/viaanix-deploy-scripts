@@ -132,6 +132,7 @@ fi
 #}
 
 . "$DEPLOY_SCRIPTS_PATH"/.bash_styling
+. "$DEPLOY_SCRIPTS_PATH"/.policies
 
 verify() {
   if [ "$VERBOSE" -eq 1 ]; then
@@ -177,6 +178,14 @@ assume_master_deploy_role() {
   export AWS_ACCESS_KEY_ID
   export AWS_SECRET_ACCESS_KEY
   export AWS_SESSION_TOKEN
+
+  (
+    aws iam put-role-policy \
+      --role-name "GitHubRunnerAssumeRoleForIAM" \
+      --policy-name "AllowAssumeRole${AWS_ACCOUNT_ID}Policy" \
+      --policy-document "${ALLOW_ASSUME_ROLE_POLICY}" \
+      "${PROFILE_ARG[@]}" && echo 0 # Success
+  ) || echo 1 # Failure
 
 #  eval "$( (aws sts assume-role --role-arn "arn:aws:iam::${AWS_ACCOUNT_ID}:role/GitHubRunnerAssumeRoleForIAM" --role-session-name "github-runner-assume-session-via-oidc" || exit 1) | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')"
 #    DEPLOY_ROLE_ASSUMED=1

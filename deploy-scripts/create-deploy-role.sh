@@ -58,8 +58,6 @@ OIDC_ROOT="$(echo "$OIDC_URL" | sed -e 's/^https:\/\///')"
 OIDC_ARN="arn:aws:iam::${RUNNER_ACCOUNT_ID}:oidc-provider/${OIDC_ROOT}"
 #AWS_ACCOUNT_ID="$RUNNER_ACCOUNT_ID"
 
-. "$DEPLOY_SCRIPTS_PATH"/.policies
-
 create_iam_role() {
   # GitHub Runner IAM Role Creation
   echo -e "${BLUE}Creating/Finding the IAM Role ${ROLE_NAME}...${RED}"
@@ -88,7 +86,7 @@ create_iam_role() {
 }
 
 # Adding All Policies to an Array to Make Creation Simpler
-POLICIES=("S3 ${S3_POLICY}" "CloudFormation ${CLOUD_FORMATION_POLICY}" "IAM ${IAM_POLICY}" "CloudWatch ${CLOUDWATCH_POLICY}" "AllowAssumeRole${AWS_ACCOUNT_ID}Policy ${ALLOW_ASSUME_ROLE_POLICY}")
+POLICIES=("S3 ${S3_POLICY}" "CloudFormation ${CLOUD_FORMATION_POLICY}" "IAM ${IAM_POLICY}" "CloudWatch ${CLOUDWATCH_POLICY}")
 
 add_custom_policies() {
   while read -r -a ALL_ROLE_ARGS; do
