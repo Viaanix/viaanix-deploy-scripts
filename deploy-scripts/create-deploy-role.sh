@@ -91,7 +91,9 @@ create_iam_role() {
 POLICIES=("S3 ${S3_POLICY}" "CloudFormation ${CLOUD_FORMATION_POLICY}" "IAM ${IAM_POLICY}" "CloudWatch ${CLOUDWATCH_POLICY}")
 
 add_custom_policies() {
-  while IFS=$' ' read -r ALL_ROLE_ARGS; do
+  echo "ROLE_ARGS: $ROLE_ARGS"
+  read -r ALL_ROLE_ARGS; do
+    echo "ALL_ROLE_ARGS: $ALL_ROLE_ARGS"
     # Adding Custom Policies to the Array
     for ROLE_ARG in "${ALL_ROLE_ARGS[@]}"; do
       ROLE_ARG="${ROLE_ARG//\"/}"
