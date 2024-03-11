@@ -166,12 +166,20 @@ verify() {
 
 DEPLOY_ROLE_ASSUMED=0
 
+assume_master_deploy_role() {
+#  if [ $DEPLOY_ROLE_ASSUMED == 0 ]; then
+  echo -e "\n\e[1;38;5;39m* Assuming Deploy Role..." > /dev/"$TTY"
+  eval "$( (aws sts assume-role --role-arn "arn:aws:iam::${AWS_ACCOUNT_ID}:role/GitHubRunnerAssumeRoleForIAM" --role-session-name "github-runner-assume-session-via-oidc" || exit 1) | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')" || exit 1
+#    DEPLOY_ROLE_ASSUMED=1
+#  fi || exit 1
+}
+
 assume_deploy_role() {
   if [ $DEPLOY_ROLE_ASSUMED == 0 ]; then
   echo -e "\n\e[1;38;5;39m* Assuming Deploy Role..."
   eval "$( (aws sts assume-role --role-arn "arn:aws:iam::${AWS_ACCOUNT_ID}:role/${APPLICATION_NAME}AssumeRole${ENVIRONMENT}" --role-session-name "${LOWERCASE_APPLICATION_NAME}-assume-session-via-oidc" || exit 1) | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')" || exit 1
     DEPLOY_ROLE_ASSUMED=1
-  fi
+  fi || exit 1
 }
 
 parse_tags() {
@@ -235,7 +243,8 @@ parse_tags() {
 
 verify
 
-assume_deploy_role
+assume_master_deploy_role
+#assume_deploy_role
 
 read -r -a TAGS <<< "$(parse_tags)"
 
