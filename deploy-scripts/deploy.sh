@@ -169,7 +169,7 @@ DEPLOY_ROLE_ASSUMED=0
 assume_master_deploy_role() {
 #  if [ $DEPLOY_ROLE_ASSUMED == 0 ]; then
   echo -e "\n\e[1;38;5;39m* Assuming Deploy Role..." > /dev/"$TTY"
-  CREDENTIALS=$(aws sts assume-role --role-arn "arn:aws:iam::${AWS_ACCOUNT_ID}:role/GitHubRunnerAssumeRoleForIAM" --role-session-name "github-runner-assume-session-via-oidc" || exit 1)
+  CREDENTIALS=$(aws sts assume-role --role-arn "arn:aws:iam::${AWS_ACCOUNT_ID}:role/GitHubRunnerAssumeRoleForIAM" --role-session-name "git-hub-runner-assume-session-via-oidc") || exit 1
   AWS_ACCESS_KEY_ID=$(echo "$CREDENTIALS" | jq -r '.Credentials.AccessKeyId')
   AWS_SECRET_ACCESS_KEY=$(echo "$CREDENTIALS" | jq -r '.Credentials.SecretAccessKey')
   AWS_SESSION_TOKEN=$(echo "$CREDENTIALS" | jq -r '.Credentials.SessionToken')
