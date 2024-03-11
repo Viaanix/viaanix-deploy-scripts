@@ -11,7 +11,13 @@ GREEN="\e[32m${BOLD}"
 X="${RESET}${BOLD}[${RED}x${RESET_COLOR}${BOLD}]${RESET}"
 CHECKMARK="${RESET}${BOLD}[${GREEN}✓${RESET_COLOR}]${RESET}"
 
-. ./deploy-scripts/.bash_styling
+if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
+  DEPLOY_SCRIPTS_PATH="./deploy-scripts"
+else
+  DEPLOY_SCRIPTS_PATH="/deploy-scripts"
+fi
+
+. "$DEPLOY_SCRIPTS_PATH"/.bash_styling
 
 # Transform Long Arguments to Short Arguments
 for ARG in "$@"; do
