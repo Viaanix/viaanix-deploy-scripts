@@ -138,22 +138,22 @@ verify() {
     echo -e "\n$(_bash_styling bold_light_blue)* Verifying the Status of the AWS Credentials...$(_bash_styling reset_all)" > /dev/"$TTY"
   fi
 
-  AWS_ACCOUNT_ID=$(aws sts get-caller-identity "${PROFILE_ARG[@]}" | jq ".Account" | tr -d "\"")
+  RUNNER_ACCOUNT_ID=$(aws sts get-caller-identity "${PROFILE_ARG[@]}" | jq ".Account" | tr -d "\"")
 
-  if [ -n "$AWS_ACCOUNT_ID" ] && [ "$AWS_ACCOUNT_ID" != " " ]; then
+  if [ -n "$RUNNER_ACCOUNT_ID" ] && [ "$RUNNER_ACCOUNT_ID" != " " ]; then
     if [ "$VERBOSE" -eq 1 ]; then
-      echo -e "$(_bash_styling bold_green)  Valid Security Token for Account: $AWS_ACCOUNT_ID$(_bash_styling reset_all)" > /dev/"$TTY"
+      echo -e "$(_bash_styling bold_green)  Valid Security Token for Account: $RUNNER_ACCOUNT_ID$(_bash_styling reset_all)" > /dev/"$TTY"
     fi
   else
     # TODO: Handle error if not local deployment?
     if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
       echo -e "$(_bash_styling bold_red) Expired Security Token$(_bash_styling bold_yellow)\n  > aws sso login$(_bash_styling reset_all)" > /dev/"$TTY"
       aws sso login > /dev/"$TTY"
-      AWS_ACCOUNT_ID="$(aws sts get-caller-identity | jq ".Account" | tr -d "\"")"
+      RUNNER_ACCOUNT_ID="$(aws sts get-caller-identity | jq ".Account" | tr -d "\"")"
 
-      if [ -n "$AWS_ACCOUNT_ID" ] && [ "$AWS_ACCOUNT_ID" != " " ] && [ "$VERBOSE" -eq 1 ]; then
+      if [ -n "$RUNNER_ACCOUNT_ID" ] && [ "$RUNNER_ACCOUNT_ID" != " " ] && [ "$VERBOSE" -eq 1 ]; then
         echo "$(_bash_styling bold_green)Successfully Logged in with SSO$(_bash_styling reset_all)"
-        echo -e "AWS_ACCOUNT_ID: $AWS_ACCOUNT_ID\n" > /dev/"$TTY"
+        echo -e "RUNNER_ACCOUNT_ID: $RUNNER_ACCOUNT_ID\n" > /dev/"$TTY"
       else
         echo -e "$(_bash_styling x)$(_bash_styling bold_red) Error running 'aws login sso'$(_bash_styling bold_yellow)" > /dev/stderr
         exit 1
@@ -161,10 +161,22 @@ verify() {
     fi
   fi || return "$?"
 
-  echo "$AWS_ACCOUNT_ID"
+  echo "$RUNNER_ACCOUNT_ID"
+}
+
+DEPLOY_ROLE_ASSUMED=0
+
+assume_deploy_role() {
+  if [ $DEPLOY_ROLE_ASSUMED == 0 ]; then
+  echo -e "\n\e[1;38;5;39m* Assuming Deploy Role..."
+  eval "$( (aws sts assume-role --role-arn "arn:aws:iam::${AWS_ACCOUNT_ID}:role/${APPLICATION_NAME}AssumeRole${ENVIRONMENT}" --role-session-name "${LOWERCASE_APPLICATION_NAME}-assume-session-via-oidc" || exit 1) | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')" || exit 1
+    DEPLOY_ROLE_ASSUMED=1
+  fi
 }
 
 verify
+
+assume_deploy_role
 
 aws sts get-caller-identity "${PROFILE_ARG[@]}" | jq ".Account" | tr -d "\""
 
@@ -282,15 +294,7 @@ aws sts get-caller-identity "${PROFILE_ARG[@]}" | jq ".Account" | tr -d "\""
 #    fi
 #}
 #
-#DEPLOY_ROLE_ASSUMED=0
-#
-#assume_deploy_role() {
-#  if [ $DEPLOY_ROLE_ASSUMED == 0 ]; then
-#  echo -e "\n\e[1;38;5;39m* Assuming Deploy Role..."
-#  eval "$( (aws sts assume-role --role-arn "arn:aws:iam::${AWS_ACCOUNT_ID}:role/${APPLICATION_NAME}AssumeRole${ENVIRONMENT}" --role-session-name "${LOWERCASE_APPLICATION_NAME}-assume-session-via-oidc" || exit 1) | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')" || exit 1
-#    DEPLOY_ROLE_ASSUMED=1
-#  fi
-#}
+
 #
 #if [ "$UPDATE_ROLE" == 1 ]; then
 #  update_role
