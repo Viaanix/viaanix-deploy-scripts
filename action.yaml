@@ -65,6 +65,6 @@ runs:
     TAGS: ${{ inputs.tags }}
     REGION: ${{ inputs.region }}
     APPLICATION_NAME: ${{ inputs.application-name }}
-    ROLE_ARGS: ${{ inputs.ec2 == 'true' && 'ec2 ' || '' }}${{ inputs.eventbridge == 'true' && 'eventbridge ' || '' }}${{ inputs.lambda == 'true' && 'lambda ' || '' }}${{ inputs.sqs == 'true' && 'sqs ' || '' }}${{ inputs.ssm == 'true' && 'ssm ' || '' }}${{ inputs.vpc == 'true' && 'vpc ' || '' }} ${{ inputs.iot == 'true' && 'iot' || '' }}
+    ROLE_ARGS: ${{ inputs.ec2 == 'true' && 'ec2 ' || '' }}${{ inputs.eventbridge == 'true' && 'eventbridge ' || '' }}${{ inputs.lambda == 'true' && 'lambda ' || '' }}${{ inputs.sqs == 'true' && 'sqs ' || '' }}${{ inputs.ssm == 'true' && 'ssm ' || '' }}${{ inputs.vpc == 'true' && 'vpc ' || '' }}${{ inputs.iot == 'true' && 'iot' || '' }}
     OIDC_URL: ${{ inputs.oidc-url }}
     CUSTOM_PARAMETER_OVERRIDES: ${{ inputs.custom-parameter-overrides }}
