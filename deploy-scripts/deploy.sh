@@ -11,13 +11,8 @@ GREEN="\e[32m${BOLD}"
 X="${RESET}${BOLD}[${RED}x${RESET_COLOR}${BOLD}]${RESET}"
 CHECKMARK="${RESET}${BOLD}[${GREEN}✓${RESET_COLOR}]${RESET}"
 
-if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
-  DEPLOY_SCRIPTS_PATH="./deploy-scripts"
-else
-  DEPLOY_SCRIPTS_PATH="/deploy-scripts"
-fi
-
-. "$DEPLOY_SCRIPTS_PATH"/.bash_styling
+LOCAL_DEPLOYMENT=0
+VERBOSE=0
 
 # Transform Long Arguments to Short Arguments
 for ARG in "$@"; do
@@ -45,6 +40,14 @@ while getopts e:p:rbdalv ARG; do
     *) usage ;;
   esac
 done
+
+if [ "$LOCAL_DEPLOYMENT" == 1 ]; then
+  DEPLOY_SCRIPTS_PATH="./deploy-scripts"
+else
+  DEPLOY_SCRIPTS_PATH="/deploy-scripts"
+fi
+
+. "$DEPLOY_SCRIPTS_PATH"/.bash_styling
 
 if [ -z "$ENVIRONMENT" ] || [ "$ENVIRONMENT" == " " ]; then
   ENVIRONMENT="DEV"
