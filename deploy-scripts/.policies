@@ -501,6 +501,7 @@ IoT_POLICY=$(echo "\
       \"Sid\": \"AllowBasicIoTResources\",\
       \"Effect\": \"Allow\",\
       \"Action\": [\
+        \"iot:DescribeEndpoint\",\
         \"iot:ListTopicRules\"\
       ],\
       \"Resource\": [\
