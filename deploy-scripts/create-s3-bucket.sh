@@ -112,6 +112,7 @@ declare -A NEW_TAGS
 # Getting the Existing Tags of the S3 Bucket
 #   This step is necessary because SAM creates tags that cannot be removed,
 #   and adding tags will remove tags not included in the tagset list
+# TODO: There is an error with getting the current tagset
 readarray -t <<< "$( aws s3api get-bucket-tagging --bucket "$BUCKET_NAME" "${PROFILE_ARG[@]}" | tr -s " " | tr -d "{}[],\t\r\"")" &&
   if [ -z "${MAPFILE[*]}" ]; then # Error Accessing the Existing Tags of the S3 Bucket
     echo -e "${X} Error accessing the existing tags to the S3 Bucket $BUCKET_NAME"

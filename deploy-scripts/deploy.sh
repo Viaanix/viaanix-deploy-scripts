@@ -346,9 +346,19 @@ update_s3_bucket() {
 }
 
 deploy_sam() {
+  IOT_ENDPOINT=""
+  while read -r -a ALL_ROLE_ARGS; do
+    for ROLE_ARG in "${ALL_ROLE_ARGS[@]}"; do
+      ROLE_ARG="${ROLE_ARG//\"/}"
+      if [[ $ROLE_ARG == "iot" ]]; then
+        IOT_ENDPOINT="IotEndpoint=$(aws iot describe-endpoint "${PROFILE_ARG[@]}" | jq -r '.endpointAddress')"
+      fi
+    done
+  done < <(echo "$ROLE_ARGS")
+
   DEPLOY_SAM_ARGS=(
       "${PROFILE_ARG[@]}"
-      "--parameter-overrides" "ApplicationName=$APPLICATION_NAME Environment=$ENVIRONMENT Region=$REGION LowerCaseApplicationName=$LOWERCASE_APPLICATION_NAME $UNPARSED_TAGS $CUSTOM_PARAMETER_OVERRIDES"
+      "--parameter-overrides" "ApplicationName=$APPLICATION_NAME Environment=$ENVIRONMENT Region=$REGION LowerCaseApplicationName=$LOWERCASE_APPLICATION_NAME $UNPARSED_TAGS $CUSTOM_PARAMETER_OVERRIDES $IOT_ENDPOINT"
       "--stack-name" "${APPLICATION_NAME}${ENVIRONMENT}"
       "--s3-bucket" "${SAM_MANAGED_BUCKET}"
       "--capabilities" "CAPABILITY_NAMED_IAM"
