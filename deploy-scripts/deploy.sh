@@ -351,7 +351,7 @@ deploy_sam() {
     for ROLE_ARG in "${ALL_ROLE_ARGS[@]}"; do
       ROLE_ARG="${ROLE_ARG//\"/}"
       if [[ $ROLE_ARG == "iot" ]]; then
-        IOT_ENDPOINT="IoTEndpoint=$(aws iot describe-endpoint "${PROFILE_ARG[@]}" | jq -r '.endpointAddress')"
+        IOT_ENDPOINT="IoTEndpoint=$(aws iot describe-endpoint --endpoint-type iot:Data-ATS "${PROFILE_ARG[@]}" | jq -r '.endpointAddress')"
       fi
     done
   done < <(echo "$ROLE_ARGS")
